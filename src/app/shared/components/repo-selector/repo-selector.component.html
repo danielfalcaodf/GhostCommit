@@ -1,0 +1,64 @@
+<div class="repo-selector-container">
+      <mat-form-field class="repo-input" appearance="outline">
+        <mat-label>Caminho do Repositório Git</mat-label>
+        <input 
+          matInput 
+          [formControl]="repoControl"
+          [matAutocomplete]="auto"
+          placeholder="Ex: /home/user/meu-projeto ou C:\\Users\\user\\meu-projeto">
+        <mat-icon matSuffix>folder</mat-icon>
+        
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onRepoSelected($event.option.value)">
+          <mat-option *ngFor="let repo of filteredRepos | async" [value]="repo.path">
+            <div class="repo-option">
+              <div class="repo-info">
+                <span class="repo-name">{{ repo.name }}</span>
+                <span class="repo-path">{{ repo.path }}</span>
+              </div>
+              <div class="repo-status">
+                <mat-icon 
+                  [class.valid]="repo.isValid" 
+                  [class.invalid]="!repo.isValid">
+                  {{ repo.isValid ? 'check_circle' : 'error' }}
+                </mat-icon>
+              </div>
+            </div>
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <div class="repo-actions">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="browseFolder()"
+          [disabled]="loading">
+          <mat-icon>folder_open</mat-icon>
+          Procurar
+        </button>
+        
+        <button 
+          mat-raised-button 
+          color="accent" 
+          (click)="openRepository()"
+          [disabled]="!repoControl.value || loading">
+          <mat-icon>{{ loading ? 'sync' : 'open_in_new' }}</mat-icon>
+          {{ loading ? 'Abrindo...' : 'Abrir' }}
+        </button>
+      </div>
+
+      <!-- Repositórios recentes -->
+      <div *ngIf="recentRepos.length > 0" class="recent-repos">
+        <h4>Repositórios Recentes</h4>
+        <mat-chip-listbox class="repo-chips">
+          <mat-chip-option 
+            *ngFor="let repo of recentRepos" 
+            (click)="selectRecentRepo(repo)"
+            [class.selected]="repo.path === repoControl.value">
+            <mat-icon matChipAvatar>{{ repo.isValid ? 'folder' : 'folder_off' }}</mat-icon>
+            {{ repo.name }}
+            <span class="repo-path-chip">{{ formatPath(repo.path) }}</span>
+          </mat-chip-option>
+        </mat-chip-listbox>
+      </div>
+    </div>

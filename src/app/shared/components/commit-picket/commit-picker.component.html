@@ -1,0 +1,145 @@
+<div class="commit-picker-container">
+    <div class="picker-header">
+        <h3>Selecionar Commits para Comparação</h3>
+        <p class="picker-subtitle">Escolha dois commits, branches ou tags para comparar</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate" diameter="30"></mat-progress-spinner>
+        <span>Carregando referências...</span>
+    </div>
+
+    <!-- Selection Form -->
+    <div *ngIf="!loading && allRefs.length > 0" class="selection-form">
+        <!-- Commit A (Base) -->
+        <div class="commit-selection">
+            <mat-form-field appearance="outline" class="commit-select">
+                <mat-label>Commit A (Base)</mat-label>
+                <mat-select [formControl]="commitAControl" [compareWith]="compareRefs">
+                    <mat-optgroup *ngFor="let group of groupedRefs" [label]="group.label">
+                        <mat-option *ngFor="let ref of group.refs" [value]="ref">
+                            <div class="ref-option">
+                                <mat-icon class="ref-icon"
+                                    [class]="'ref-' + ref.type">{{ getRefIcon(ref.type) }}</mat-icon>
+                                <div class="ref-info">
+                                    <span class="ref-name">{{ ref.displayName }}</span>
+                                    <span class="ref-hash">{{ formatHash(ref.hash) }}</span>
+                                </div>
+                            </div>
+                        </mat-option>
+                    </mat-optgroup>
+                </mat-select>
+                <mat-hint>Versão base para comparação</mat-hint>
+            </mat-form-field>
+
+            <!-- Chip para Commit A -->
+            <div *ngIf="commitAControl.value" class="selected-chip">
+                <mat-chip-listbox>
+                    <mat-chip-option selected [disabled]="true">
+                        <mat-icon matChipAvatar [class]="'ref-' + commitAControl.value.type">
+                            {{ getRefIcon(commitAControl.value.type) }}
+                        </mat-icon>
+                        <span class="chip-content">
+                            <strong>A:</strong> {{ commitAControl.value.displayName }}
+                        </span>
+                        <button matChipRemove (click)="clearSelection('A')">
+                            <mat-icon>cancel</mat-icon>
+                        </button>
+                    </mat-chip-option>
+                </mat-chip-listbox>
+            </div>
+        </div>
+
+        <!-- Comparison Arrow -->
+        <div class="comparison-arrow">
+            <mat-icon color="accent">compare_arrows</mat-icon>
+        </div>
+
+        <!-- Commit B (Target) -->
+        <div class="commit-selection">
+            <mat-form-field appearance="outline" class="commit-select">
+                <mat-label>Commit B (Target)</mat-label>
+                <mat-select [formControl]="commitBControl" [compareWith]="compareRefs">
+                    <mat-optgroup *ngFor="let group of groupedRefs" [label]="group.label">
+                        <mat-option *ngFor="let ref of group.refs" [value]="ref">
+                            <div class="ref-option">
+                                <mat-icon class="ref-icon"
+                                    [class]="'ref-' + ref.type">{{ getRefIcon(ref.type) }}</mat-icon>
+                                <div class="ref-info">
+                                    <span class="ref-name">{{ ref.displayName }}</span>
+                                    <span class="ref-hash">{{ formatHash(ref.hash) }}</span>
+                                </div>
+                            </div>
+                        </mat-option>
+                    </mat-optgroup>
+                </mat-select>
+                <mat-hint>Versão target para comparação</mat-hint>
+            </mat-form-field>
+
+            <!-- Chip para Commit B -->
+            <div *ngIf="commitBControl.value" class="selected-chip">
+                <mat-chip-listbox>
+                    <mat-chip-option selected [disabled]="true">
+                        <mat-icon matChipAvatar [class]="'ref-' + commitBControl.value.type">
+                            {{ getRefIcon(commitBControl.value.type) }}
+                        </mat-icon>
+                        <span class="chip-content">
+                            <strong>B:</strong> {{ commitBControl.value.displayName }}
+                        </span>
+                        <button matChipRemove (click)="clearSelection('B')">
+                            <mat-icon>cancel</mat-icon>
+                        </button>
+                    </mat-chip-option>
+                </mat-chip-listbox>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div *ngIf="!loading" class="action-buttons">
+        <button mat-raised-button color="primary" [disabled]="!canCompare()" (click)="performComparison()"
+            matTooltip="Compare os commits selecionados">
+            <mat-icon>compare</mat-icon>
+            Comparar Commits
+        </button>
+
+        <button mat-button (click)="swapSelections()" [disabled]="!commitAControl.value || !commitBControl.value"
+            matTooltip="Trocar ordem dos commits">
+            <mat-icon>swap_horiz</mat-icon>
+            Trocar A ↔ B
+        </button>
+
+        <button mat-button (click)="clearAllSelections()" [disabled]="!commitAControl.value && !commitBControl.value"
+            matTooltip="Limpar seleções">
+            <mat-icon>clear</mat-icon>
+            Limpar
+        </button>
+    </div>
+
+    <!-- Quick Actions -->
+    <div *ngIf="!loading && allRefs.length > 0" class="quick-actions">
+        <h4>Ações Rápidas</h4>
+        <div class="quick-buttons">
+            <button mat-stroked-button (click)="compareWithPrevious()" [disabled]="!hasCommits()">
+                <mat-icon>history</mat-icon>
+                Último vs Anterior
+            </button>
+            <button mat-stroked-button (click)="compareHeadWithMain()" [disabled]="!hasBranches()">
+                <mat-icon>call_split</mat-icon>
+                HEAD vs Main
+            </button>
+            <button mat-stroked-button (click)="compareWithTags()" [disabled]="!hasTags()">
+                <mat-icon>local_offer</mat-icon>
+                Últimas Tags
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && allRefs.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>Nenhuma referência encontrada</h3>
+        <p>Certifique-se de que um repositório Git válido está aberto.</p>
+    </div>
+</div>

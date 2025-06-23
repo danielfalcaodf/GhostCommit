@@ -1,0 +1,205 @@
+<div class="diff-stats-container">
+      <!-- Resumo Principal -->
+      <mat-card class="stats-overview">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>analytics</mat-icon>
+            Resumo da Comparação
+          </mat-card-title>
+          <mat-card-subtitle>
+            Estatísticas detalhadas das modificações
+          </mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="stats-grid">
+            <!-- Total de Arquivos -->
+            <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>description</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value">{{ stats.totalFiles }}</div>
+                <div class="stat-label">Arquivos Modificados</div>
+              </div>
+            </div>
+
+            <!-- Linhas Adicionadas -->
+            <div class="stat-item addition">
+              <div class="stat-icon">
+                <mat-icon>add</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value">+{{ stats.totalInsertions | number }}</div>
+                <div class="stat-label">Linhas Adicionadas</div>
+              </div>
+            </div>
+
+            <!-- Linhas Removidas -->
+            <div class="stat-item deletion">
+              <div class="stat-icon">
+                <mat-icon>remove</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value">-{{ stats.totalDeletions | number }}</div>
+                <div class="stat-label">Linhas Removidas</div>
+              </div>
+            </div>
+
+            <!-- Mudança Líquida -->
+            <div class="stat-item" [class.positive]="stats.netChanges > 0" [class.negative]="stats.netChanges < 0">
+              <div class="stat-icon">
+                <mat-icon>{{ stats.netChanges >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+              </div>
+              <div class="stat-details">
+                <div class="stat-value">{{ stats.netChanges > 0 ? '+' : '' }}{{ stats.netChanges | number }}</div>
+                <div class="stat-label">Mudança Líquida</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Progresso -->
+          <div class="progress-section">
+            <div class="progress-labels">
+              <span class="addition-label">Adições: {{ stats.totalInsertions | number }}</span>
+              <span class="deletion-label">Remoções: {{ stats.totalDeletions | number }}</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar">
+                <div 
+                  class="progress-addition" 
+                  [style.width.%]="getAdditionPercentage()">
+                </div>
+                <div 
+                  class="progress-deletion" 
+                  [style.width.%]="getDeletionPercentage()">
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Status dos Arquivos -->
+      <mat-card class="file-status-stats">
+        <mat-card-header>
+          <mat-card-title>Status dos Arquivos</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="status-grid">
+            <div class="status-item added">
+              <mat-icon>add_circle</mat-icon>
+              <div class="status-count">{{ stats.addedFiles }}</div>
+              <div class="status-label">Adicionados</div>
+            </div>
+
+            <div class="status-item modified">
+              <mat-icon>edit</mat-icon>
+              <div class="status-count">{{ stats.modifiedFiles }}</div>
+              <div class="status-label">Modificados</div>
+            </div>
+
+            <div class="status-item deleted">
+              <mat-icon>remove_circle</mat-icon>
+              <div class="status-count">{{ stats.deletedFiles }}</div>
+              <div class="status-label">Removidos</div>
+            </div>
+
+            <div class="status-item renamed">
+              <mat-icon>drive_file_move</mat-icon>
+              <div class="status-count">{{ stats.renamedFiles }}</div>
+              <div class="status-label">Renomeados</div>
+            </div>
+
+            <div class="status-item binary" *ngIf="stats.binaryFiles > 0">
+              <mat-icon>settings</mat-icon>
+              <div class="status-count">{{ stats.binaryFiles }}</div>
+              <div class="status-label">Binários</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Arquivos por Extensão -->
+      <mat-card class="extension-stats" *ngIf="hasExtensionStats()">
+        <mat-card-header>
+          <mat-card-title>Tipos de Arquivo</mat-card-title>
+          <button mat-icon-button [matMenuTriggerFor]="extensionMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #extensionMenu="matMenu">
+            <button mat-menu-item (click)="exportExtensionStats()">
+              <mat-icon>download</mat-icon>
+              Exportar Dados
+            </button>
+          </mat-menu>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="extension-list">
+            <div 
+              *ngFor="let ext of getTopExtensions()" 
+              class="extension-item"
+              [matTooltip]="ext.extension + ': ' + ext.count + ' arquivos'">
+              
+              <div class="extension-info">
+                <span class="extension-name">.{{ ext.extension }}</span>
+                <span class="extension-count">{{ ext.count }}</span>
+              </div>
+              
+              <div class="extension-bar">
+                <div 
+                  class="extension-fill" 
+                  [style.width.%]="getExtensionPercentage(ext.count)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Destaques -->
+      <mat-card class="highlights-stats">
+        <mat-card-header>
+          <mat-card-title>Destaques</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="highlights-list">
+            <div class="highlight-item" *ngIf="stats.largestFile">
+              <mat-icon>trending_up</mat-icon>
+              <div class="highlight-content">
+                <div class="highlight-title">Arquivo com Mais Alterações</div>
+                <div class="highlight-value">
+                  {{ stats.largestFile.name }} 
+                  <span class="highlight-count">({{ stats.largestFile.changes }} linhas)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="highlight-item" *ngIf="stats.mostActiveAuthor">
+              <mat-icon>person</mat-icon>
+              <div class="highlight-content">
+                <div class="highlight-title">Autor Mais Ativo</div>
+                <div class="highlight-value">
+                  {{ stats.mostActiveAuthor.name }}
+                  <span class="highlight-count">({{ stats.mostActiveAuthor.files }} arquivos)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="highlight-item">
+              <mat-icon>code</mat-icon>
+              <div class="highlight-content">
+                <div class="highlight-title">Complexidade</div>
+                <div class="highlight-value">
+                  {{ getComplexityLevel() }}
+                  <span class="highlight-count">({{ getTotalChanges() | number }} alterações)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>

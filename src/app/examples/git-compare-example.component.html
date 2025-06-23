@@ -1,0 +1,93 @@
+<div class="git-compare-container">
+      <!-- Header -->
+      <div class="compare-header">
+        <h1>Comparação de Commits</h1>
+        <p>Compare duas versões do seu repositório Git</p>
+      </div>
+
+      <!-- Step 1: Repository Selection -->
+      <div class="compare-step" [class.completed]="currentRepository">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <h2>Selecionar Repositório</h2>
+        </div>
+        
+        <app-repo-selector
+          (repositorySelected)="onRepositoryOpened($event)">
+        </app-repo-selector>
+      </div>
+
+      <!-- Step 2: Commit Selection -->
+      <div 
+        class="compare-step" 
+        [class.completed]="selectedCommits.A && selectedCommits.B"
+        [class.disabled]="!currentRepository">
+        
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <h2>Selecionar Commits</h2>
+        </div>
+        
+        <app-commit-picker
+          *ngIf="currentRepository"
+          [repository]="currentRepository"
+          (selectionChanged)="onCommitSelectionChanged($event)"
+          (comparisonRequested)="onCompareRequested($event)">
+        </app-commit-picker>
+        
+        <div *ngIf="!currentRepository" class="step-placeholder">
+          <p>Selecione um repositório primeiro</p>
+        </div>
+      </div>
+
+      <!-- Step 3: File Comparison -->
+      <div 
+        class="compare-step comparison-content" 
+        [class.disabled]="!comparisonResult"
+        *ngIf="comparisonResult">
+        
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <h2>Arquivos Modificados</h2>
+          <div class="comparison-summary">
+            <span class="summary-item">
+              <strong>{{ comparisonResult.diff.stats.totalFiles }}</strong> arquivos
+            </span>
+            <span class="summary-item addition">
+              <strong>+{{ comparisonResult.diff.stats.totalInsertions }}</strong> adições
+            </span>
+            <span class="summary-item deletion">
+              <strong>-{{ comparisonResult.diff.stats.totalDeletions }}</strong> remoções
+            </span>
+          </div>
+        </div>
+
+        <div class="comparison-layout">
+          <!-- File Tree -->
+          <div class="file-tree-panel">
+            <app-file-tree
+              [files]="comparisonResult.diff.files"
+              (fileSelected)="onFileSelected($event)">
+            </app-file-tree>
+          </div>
+
+          <!-- Diff Viewer -->
+          <div class="diff-viewer-panel">
+            <app-diff-viewer
+              [fileComparison]="selectedFileComparison"
+              [fromCommit]="selectedCommits.A?.name || ''"
+              [toCommit]="selectedCommits.B?.name || ''"
+              (fileChanged)="onFileChanged($event)">
+            </app-diff-viewer>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-overlay">
+        <div class="loading-content">
+          <div class="loading-spinner"></div>
+          <p>{{ loadingMessage }}</p>
+        </div>
+      </div>
+    </div>

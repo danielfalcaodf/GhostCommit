@@ -1,0 +1,232 @@
+<div class="history-search-container">
+      <mat-card class="search-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>history</mat-icon>
+            Pesquisa de Texto Histórico
+          </mat-card-title>
+          <mat-card-subtitle>
+            Encontre commits que adicionaram ou removeram código específico
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="searchForm" (ngSubmit)="performSearch()">
+            <div class="search-controls">
+              <!-- Termo de busca -->
+              <mat-form-field appearance="outline" class="search-input">
+                <mat-label>Texto para buscar</mat-label>
+                <input 
+                  matInput 
+                  formControlName="searchTerm"
+                  placeholder="Ex: function login() ou console.log"
+                  [class.error]="searchForm.get('searchTerm')?.invalid && searchForm.get('searchTerm')?.touched">
+                <mat-icon matSuffix>search</mat-icon>
+                <mat-error *ngIf="searchForm.get('searchTerm')?.hasError('required')">
+                  Termo de busca é obrigatório
+                </mat-error>
+                <mat-error *ngIf="searchForm.get('searchTerm')?.hasError('minlength')">
+                  Mínimo de 3 caracteres
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Tipo de busca -->
+              <mat-form-field appearance="outline" class="search-type">
+                <mat-label>Tipo de busca</mat-label>
+                <mat-select formControlName="searchType">
+                  <mat-option value="pickaxe">
+                    <div class="option-content">
+                      <strong>Git Pickaxe (-S)</strong>
+                      <span>Busca por adição/remoção de texto exato</span>
+                    </div>
+                  </mat-option>
+                  <mat-option value="grep">
+                    <div class="option-content">
+                      <strong>Git Grep (-G)</strong>
+                      <span>Busca regex no diff</span>
+                    </div>
+                  </mat-option>
+                  <mat-option value="log">
+                    <div class="option-content">
+                      <strong>Git Log</strong>
+                      <span>Busca na mensagem dos commits</span>
+                    </div>
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <!-- Botão de busca -->
+              <button 
+                mat-raised-button 
+                color="primary" 
+                type="submit"
+                [disabled]="searchForm.invalid || searching"
+                class="search-button">
+                <mat-icon>{{ searching ? 'sync' : 'search' }}</mat-icon>
+                {{ searching ? 'Buscando...' : 'Buscar' }}
+              </button>
+            </div>
+
+            <!-- Filtros avançados -->
+            <mat-expansion-panel class="advanced-filters">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>tune</mat-icon>
+                  Filtros Avançados
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="filter-content">
+                <div class="filter-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Autor</mat-label>
+                    <input matInput formControlName="author" placeholder="Nome do autor">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Limite de resultados</mat-label>
+                    <mat-select formControlName="limit">
+                      <mat-option value="10">10 commits</mat-option>
+                      <mat-option value="25">25 commits</mat-option>
+                      <mat-option value="50">50 commits</mat-option>
+                      <mat-option value="100">100 commits</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="filter-row">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Caminho do arquivo</mat-label>
+                    <input matInput formControlName="filePath" placeholder="src/components/*.ts">
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Branch</mat-label>
+                    <input matInput formControlName="branch" placeholder="main, develop, etc.">
+                  </mat-form-field>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Buscas recentes -->
+      <mat-card *ngIf="recentSearches.length > 0" class="recent-searches">
+        <mat-card-header>
+          <mat-card-title>Buscas Recentes</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="recent-chips">
+            <mat-chip-listbox>
+              <mat-chip-option 
+                *ngFor="let search of recentSearches" 
+                (click)="loadRecentSearch(search)"
+                [matTooltip]="search.searchType + ': ' + search.totalFound + ' resultados'">
+                {{ search.searchTerm }}
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Resultados -->
+      <div *ngIf="searchResults" class="results-container">
+        <mat-card class="results-header">
+          <mat-card-content>
+            <div class="results-summary">
+              <h3>
+                {{ searchResults.totalFound }} resultados para 
+                <code>"{{ searchResults.searchTerm }}"</code>
+              </h3>
+              <div class="search-type-info">
+                <mat-icon>info</mat-icon>
+                <span>{{ getSearchTypeDescription(searchResults.searchType) }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Lista de commits -->
+        <div class="commits-list">
+          <mat-card *ngFor="let commit of searchResults.commits; trackBy: trackCommit" class="commit-card">
+            <mat-card-header>
+              <div class="commit-info">
+                <div class="commit-hash">
+                  <mat-icon>commit</mat-icon>
+                  <code>{{ commit.shortHash }}</code>
+                </div>
+                <div class="commit-meta">
+                  <span class="author">{{ commit.author }}</span>
+                  <span class="date">{{ formatDate(commit.date) }}</span>
+                </div>
+              </div>
+              <button 
+                mat-icon-button 
+                (click)="viewCommitDiff(commit)"
+                matTooltip="Ver diferenças completas">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </mat-card-header>
+
+            <mat-card-content>
+              <div class="commit-message">{{ commit.message }}</div>
+              
+              <!-- Contexto específico do pickaxe -->
+              <div *ngIf="getPickaxeResult(commit) as pickaxeResult" class="pickaxe-context">
+                <div *ngFor="let file of pickaxeResult.files" class="file-context">
+                  <h5>
+                    <mat-icon>description</mat-icon>
+                    {{ file.path }}
+                  </h5>
+                  
+                  <div class="context-lines">
+                    <div *ngFor="let line of file.additions" class="context-line addition">
+                      <span class="line-marker">+</span>
+                      <code>{{ line }}</code>
+                    </div>
+                    <div *ngFor="let line of file.deletions" class="context-line deletion">
+                      <span class="line-marker">-</span>
+                      <code>{{ line }}</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+
+            <mat-card-actions>
+              <button mat-button (click)="compareWithCurrent(commit)">
+                <mat-icon>compare</mat-icon>
+                Comparar com Atual
+              </button>
+              
+              <button mat-button (click)="viewFileAtCommit(commit)">
+                <mat-icon>code</mat-icon>
+                Ver Arquivos
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+        <!-- Carregar mais -->
+        <div *ngIf="hasMoreResults" class="load-more">
+          <button mat-button (click)="loadMoreResults()" [disabled]="searching">
+            <mat-icon>expand_more</mat-icon>
+            Carregar Mais Resultados
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado vazio -->
+      <div *ngIf="!searchResults && !searching" class="empty-state">
+        <mat-icon>search</mat-icon>
+        <h3>Pesquise no histórico do Git</h3>
+        <p>Digite um termo para encontrar commits que adicionaram ou removeram código específico</p>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="searching" class="loading-state">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <p>Pesquisando no histórico...</p>
+      </div>
+    </div>

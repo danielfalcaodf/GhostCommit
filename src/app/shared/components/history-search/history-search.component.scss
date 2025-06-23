@@ -1,0 +1,226 @@
+.history-search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .search-controls {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    .search-input {
+      min-width: 300px;
+    }
+
+    .search-type {
+      min-width: 200px;
+    }
+
+    .search-button {
+      height: 56px;
+    }
+
+    .option-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .option-content span {
+      font-size: 0.8rem;
+      color: var(--on-surface-variant-color);
+    }
+
+    .advanced-filters {
+      margin-top: 1rem;
+    }
+
+    .filter-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .recent-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .results-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .results-summary h3 {
+      margin: 0;
+      color: var(--on-surface-color);
+    }
+
+    .search-type-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--on-surface-variant-color);
+      font-size: 0.9rem;
+    }
+
+    .commits-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .commit-card {
+      transition: box-shadow 0.2s ease;
+    }
+
+    .commit-card:hover {
+      box-shadow: var(--elevation-2);
+    }
+
+    .commit-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .commit-hash {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-family-mono);
+      color: var(--primary-color);
+    }
+
+    .commit-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.9rem;
+      color: var(--on-surface-variant-color);
+    }
+
+    .commit-message {
+      margin-bottom: 1rem;
+      color: var(--on-surface-color);
+      line-height: 1.5;
+    }
+
+    .pickaxe-context {
+      background: var(--surface-variant-color);
+      border-radius: var(--border-radius-md);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .file-context {
+      margin-bottom: 1rem;
+    }
+
+    .file-context:last-child {
+      margin-bottom: 0;
+    }
+
+    .file-context h5 {
+      margin: 0 0 0.75rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--on-surface-color);
+      font-family: var(--font-family-mono);
+      font-size: 0.9rem;
+    }
+
+    .context-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .context-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-family-mono);
+      font-size: 0.85rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--border-radius-sm);
+    }
+
+    .context-line.addition {
+      background: rgba(76, 175, 80, 0.1);
+      color: var(--success-color);
+    }
+
+    .context-line.deletion {
+      background: rgba(244, 67, 54, 0.1);
+      color: var(--error-color);
+    }
+
+    .line-marker {
+      font-weight: bold;
+      min-width: 12px;
+    }
+
+    .load-more {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .empty-state, .loading-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--on-surface-variant-color);
+    }
+
+    .empty-state mat-icon, .loading-state mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 0.5rem 0;
+      color: var(--on-surface-color);
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .search-controls {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+
+      .results-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+    }

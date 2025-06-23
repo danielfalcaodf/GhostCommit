@@ -1,0 +1,195 @@
+.git-compare-container {
+      min-height: 100vh;
+      background: var(--background-color);
+      position: relative;
+    }
+
+    .compare-header {
+      padding: 2rem;
+      text-align: center;
+      background: var(--surface-color);
+      border-bottom: 1px solid var(--outline-color);
+    }
+
+    .compare-header h1 {
+      margin: 0 0 0.5rem 0;
+      color: var(--on-surface-color);
+      font-size: 2rem;
+      font-weight: 300;
+    }
+
+    .compare-header p {
+      margin: 0;
+      color: var(--on-surface-variant-color);
+      font-size: 1.1rem;
+    }
+
+    .compare-step {
+      margin: 2rem;
+      background: var(--surface-color);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--elevation-1);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .compare-step.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .compare-step.completed {
+      border-left: 4px solid var(--success-color);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 2rem;
+      background: var(--surface-variant-color);
+      border-bottom: 1px solid var(--outline-color);
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: var(--on-primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .compare-step.completed .step-number {
+      background: var(--success-color);
+    }
+
+    .step-header h2 {
+      margin: 0;
+      color: var(--on-surface-color);
+      font-size: 1.3rem;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .comparison-summary {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .summary-item {
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--border-radius-sm);
+      font-size: 0.9rem;
+      background: var(--surface-container-color);
+    }
+
+    .summary-item.addition {
+      background: rgba(76, 175, 80, 0.2);
+      color: var(--success-color);
+    }
+
+    .summary-item.deletion {
+      background: rgba(244, 67, 54, 0.2);
+      color: var(--error-color);
+    }
+
+    .step-placeholder {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--on-surface-variant-color);
+    }
+
+    .comparison-content {
+      margin: 2rem;
+    }
+
+    .comparison-layout {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 0;
+      height: 70vh;
+    }
+
+    .file-tree-panel {
+      border-right: 1px solid var(--outline-color);
+      overflow: hidden;
+    }
+
+    .diff-viewer-panel {
+      overflow: hidden;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .loading-content {
+      background: var(--surface-color);
+      padding: 2rem;
+      border-radius: var(--border-radius-lg);
+      text-align: center;
+      box-shadow: var(--elevation-3);
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--outline-color);
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-content p {
+      margin: 0;
+      color: var(--on-surface-variant-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .compare-step {
+        margin: 1rem;
+      }
+
+      .comparison-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 300px 1fr;
+        height: auto;
+      }
+
+      .file-tree-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--outline-color);
+      }
+
+      .step-header {
+        padding: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .comparison-summary {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }

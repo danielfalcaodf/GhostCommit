@@ -1,0 +1,48 @@
+@use '@angular/material' as mat;
+
+// Inclui a tipografia comum do Material Design.
+@include mat.core();
+
+// Define as paletas usando as cores padrão do Material com customização
+$light-primary: mat.define-palette(mat.$blue-palette, 600, 400, 800);
+$light-accent: mat.define-palette(mat.$cyan-palette, 500, 300, 700);
+$light-warn: mat.define-palette(mat.$red-palette);
+
+$dark-primary: mat.define-palette(mat.$blue-palette, 400, 300, 600);
+$dark-accent: mat.define-palette(mat.$cyan-palette, 300, 200, 500);
+$dark-warn: mat.define-palette(mat.$red-palette, 400);
+
+// Cria o tema claro
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: $light-primary,
+    accent: $light-accent,
+    warn: $light-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// Cria o tema escuro personalizado  
+$dark-theme: mat.define-dark-theme((
+  color: (
+    primary: $dark-primary,
+    accent: $dark-accent,
+    warn: $dark-warn,
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// Aplica o tema escuro por padrão
+@include mat.all-component-themes($dark-theme);
+
+// Classe para o tema claro
+.light-theme {
+  @include mat.all-component-colors($light-theme);
+}
+
+// Classe para o tema escuro
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}

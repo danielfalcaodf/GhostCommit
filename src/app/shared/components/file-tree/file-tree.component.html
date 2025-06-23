@@ -1,0 +1,145 @@
+<div class="file-tree-container">
+      <!-- Header com estatísticas -->
+      <div class="tree-header">
+        <div class="tree-stats">
+          <span class="stat-item">
+            <mat-icon>description</mat-icon>
+            {{ totalFiles }} arquivos
+          </span>
+          <span class="stat-item addition">
+            <mat-icon>add</mat-icon>
+            +{{ totalInsertions }}
+          </span>
+          <span class="stat-item deletion">
+            <mat-icon>remove</mat-icon>
+            -{{ totalDeletions }}
+          </span>
+        </div>
+        
+        <div class="tree-actions">
+          <button mat-icon-button (click)="expandAll()" matTooltip="Expandir todos">
+            <mat-icon>unfold_more</mat-icon>
+          </button>
+          <button mat-icon-button (click)="collapseAll()" matTooltip="Recolher todos">
+            <mat-icon>unfold_less</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="tree-filters">
+        <div class="filter-chips">
+          <button 
+            mat-stroked-button 
+            [class.active]="showFilter === 'all'"
+            (click)="setFilter('all')">
+            Todos ({{ totalFiles }})
+          </button>
+          <button 
+            mat-stroked-button 
+            [class.active]="showFilter === 'added'"
+            (click)="setFilter('added')"
+            class="filter-added">
+            Adicionados ({{ getFilesByStatus('added').length }})
+          </button>
+          <button 
+            mat-stroked-button 
+            [class.active]="showFilter === 'modified'"
+            (click)="setFilter('modified')"
+            class="filter-modified">
+            Modificados ({{ getFilesByStatus('modified').length }})
+          </button>
+          <button 
+            mat-stroked-button 
+            [class.active]="showFilter === 'deleted'"
+            (click)="setFilter('deleted')"
+            class="filter-deleted">
+            Removidos ({{ getFilesByStatus('deleted').length }})
+          </button>
+        </div>
+      </div>
+
+      <!-- Árvore de arquivos -->
+      <div class="tree-content">
+        <mat-tree [dataSource]="dataSource" [treeControl]="treeControl" class="file-tree">
+          <!-- Nó de diretório -->
+          <mat-tree-node 
+            *matTreeNodeDef="let node" 
+            matTreeNodeToggle 
+            [class.selected]="selectedFile === node.path"
+            (click)="selectFile(node)">
+            
+            <div class="tree-node-content" [style.margin-left.px]="node.level * 20">
+              <!-- Ícone de pasta/arquivo -->
+              <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name" [disabled]="!node.expandable">
+                <mat-icon class="tree-icon">
+                  {{ node.expandable ? (treeControl.isExpanded(node) ? 'folder_open' : 'folder') : getFileIcon(node.name) }}
+                </mat-icon>
+              </button>
+
+              <!-- Nome do arquivo/pasta -->
+              <span class="node-name" [class.directory]="node.isDirectory">{{ node.name }}</span>
+
+              <!-- Badge de status (apenas para arquivos) -->
+              <div *ngIf="!node.isDirectory && node.fileInfo" class="file-badges">
+                <mat-icon 
+                  [class]="'status-' + node.fileInfo.status"
+                  [matTooltip]="getStatusTooltip(node.fileInfo.status)">
+                  {{ getStatusIcon(node.fileInfo.status) }}
+                </mat-icon>
+                
+                <!-- Estatísticas do arquivo -->
+                <div class="file-stats" *ngIf="node.fileInfo.insertions > 0 || node.fileInfo.deletions > 0">
+                  <span *ngIf="node.fileInfo.insertions > 0" class="addition">+{{ node.fileInfo.insertions }}</span>
+                  <span *ngIf="node.fileInfo.deletions > 0" class="deletion">-{{ node.fileInfo.deletions }}</span>
+                </div>
+
+                <!-- Badge para arquivo binário -->
+                <mat-icon *ngIf="node.fileInfo.isBinary" class="binary-badge" matTooltip="Arquivo binário">
+                  settings
+                </mat-icon>
+              </div>
+
+              <!-- Progress bar para arquivos sendo carregados -->
+              <mat-progress-bar 
+                *ngIf="loadingFiles.has(node.path)" 
+                mode="indeterminate" 
+                class="loading-bar">
+              </mat-progress-bar>
+            </div>
+          </mat-tree-node>
+
+          <!-- Nó expansível -->
+          <mat-tree-node 
+            *matTreeNodeDef="let node; when: hasChild" 
+            matTreeNodePadding 
+            [class.selected]="selectedFile === node.path"
+            (click)="selectFile(node)">
+            
+            <div class="tree-node-content">
+              <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.name">
+                <mat-icon class="tree-icon">
+                  {{ treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right' }}
+                </mat-icon>
+              </button>
+              
+              <mat-icon class="tree-icon folder-icon">
+                {{ treeControl.isExpanded(node) ? 'folder_open' : 'folder' }}
+              </mat-icon>
+              
+              <span class="node-name directory">{{ node.name }}</span>
+              
+              <!-- Contador de arquivos na pasta -->
+              <span class="folder-count">({{ getFileCountInFolder(node) }})</span>
+            </div>
+          </mat-tree-node>
+        </mat-tree>
+
+        <!-- Estado vazio -->
+        <div *ngIf="filteredFiles.length === 0" class="empty-state">
+          <mat-icon>folder_open</mat-icon>
+          <h3>Nenhum arquivo encontrado</h3>
+          <p>{{ getEmptyStateMessage() }}</p>
+        </div>
+      </div>
+    </div>

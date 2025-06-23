@@ -1,0 +1,255 @@
+// Importar variáveis do tema
+$primary-blue: #2196F3;
+$primary-blue-dark: #1976D2;
+$primary-blue-light: #42A5F5;
+$accent-blue: #00BCD4;
+$gray-900: #0f0f0f;
+$gray-800: #1a1a1a;
+$gray-700: #2d2d2d;
+$gray-600: #404040;
+$gray-300: #a3a3a3;
+$gray-100: #f5f5f5;
+
+// Componente específico
+:host {
+  display: block;
+  min-height: 100vh;
+  background: linear-gradient(135deg, $gray-900 0%, $gray-800 100%);
+}
+
+// Container principal com efeito glass
+.container-fluid {
+  background: rgba($gray-800, 0.5);
+  backdrop-filter: blur(10px);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+// Cards com tema personalizado
+.mat-mdc-card {
+  background: $gray-800 !important;
+  border: 1px solid $gray-600;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    border-color: $primary-blue;
+  }
+  
+  .mat-mdc-card-header {
+    .mat-mdc-card-title {
+      color: $gray-100 !important;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, $primary-blue-light, $accent-blue);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+  
+  .mat-mdc-card-content {
+    color: $gray-300 !important;
+    
+    p {
+      color: $gray-300;
+      line-height: 1.6;
+    }
+  }
+}
+
+// Logos com efeitos aprimorados
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: all 0.75s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 12px;
+  
+  &.angular {
+    &:hover {
+      filter: drop-shadow(0 0 2em #e32727) brightness(1.2);
+      transform: scale(1.05) rotate(5deg);
+    }
+  }
+  
+  &.tauri {
+    &:hover {
+      filter: drop-shadow(0 0 2em #24c8db) brightness(1.2);
+      transform: scale(1.05) rotate(-5deg);
+    }
+  }
+}
+
+// Botões Material personalizados
+.mat-mdc-raised-button {
+  &.mat-primary {
+    background: linear-gradient(135deg, $primary-blue, $primary-blue-dark) !important;
+    border-radius: 8px;
+    font-weight: 500;
+    text-transform: none;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba($primary-blue, 0.4);
+      background: linear-gradient(135deg, $primary-blue-light, $primary-blue) !important;
+    }
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($primary-blue, 0.3);
+    }
+  }
+}
+
+// Form fields personalizados
+.mat-mdc-form-field {
+  .mat-mdc-text-field-wrapper {
+    background: $gray-700 !important;
+    border-radius: 8px;
+    border: 1px solid $gray-600;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      border-color: $primary-blue-light;
+    }
+    
+    &.mdc-text-field--focused {
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 2px rgba($primary-blue, 0.2);
+    }
+  }
+  
+  .mat-mdc-floating-label {
+    color: $gray-300 !important;
+  }
+  
+  input {
+    color: $gray-100 !important;
+    caret-color: $primary-blue;
+    
+    &::placeholder {
+      color: $gray-300;
+    }
+  }
+}
+
+// Alertas personalizados
+.alert {
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  
+  &.alert-success {
+    background: linear-gradient(135deg, rgba($accent-blue, 0.2), rgba($primary-blue, 0.1));
+    border-left: 4px solid $accent-blue;
+    color: $gray-100;
+    box-shadow: 0 4px 12px rgba($accent-blue, 0.2);
+  }
+}
+
+// Classes utilitárias aprimoradas
+.d-flex {
+  &.gap-3 {
+    gap: 1rem;
+  }
+  
+  &.align-items-end {
+    align-items: flex-end;
+  }
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+// Monaco Editor container
+.monaco-editor-container {
+  border: 1px solid $gray-600;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, $primary-blue, $accent-blue);
+    z-index: 1;
+  }
+  
+  &:hover {
+    border-color: $primary-blue-light;
+    box-shadow: 0 0 20px rgba($primary-blue, 0.1);
+  }
+}
+
+// Animações de entrada
+.row {
+  &:nth-child(1) { animation: fadeInUp 0.6s ease-out 0.1s both; }
+  &:nth-child(2) { animation: fadeInUp 0.6s ease-out 0.2s both; }
+  &:nth-child(3) { animation: fadeInUp 0.6s ease-out 0.3s both; }
+  &:nth-child(4) { animation: fadeInUp 0.6s ease-out 0.4s both; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsividade aprimorada
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem 0.5rem;
+  }
+  
+  .logo {
+    height: 4em;
+    padding: 1em;
+  }
+  
+  .mat-mdc-card {
+    margin-bottom: 1rem;
+    
+    .mat-mdc-card-content {
+      padding: 1rem;
+    }
+  }
+  
+  .mat-mdc-raised-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .d-flex.gap-3 {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .flex-grow-1 {
+    width: 100%;
+  }
+}

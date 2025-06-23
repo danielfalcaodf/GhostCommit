@@ -1,0 +1,56 @@
+<mat-nav-list class="sidebar-nav">
+      <h3 class="sidebar-title">Navegação</h3>
+      
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+        <mat-icon matListItemIcon>dashboard</mat-icon>
+        <span matListItemTitle>Dashboard</span>
+      </a>
+      
+      <a mat-list-item routerLink="/editor" routerLinkActive="active">
+        <mat-icon matListItemIcon>code</mat-icon>
+        <span matListItemTitle>Editor de Código</span>
+      </a>
+      
+      <mat-divider></mat-divider>
+      
+      <h3 class="sidebar-title">Git Tools</h3>
+      
+      <a mat-list-item routerLink="/git-compare" routerLinkActive="active">
+        <mat-icon matListItemIcon>compare_arrows</mat-icon>
+        <span matListItemTitle>Comparar Commits</span>
+      </a>
+      
+      <a mat-list-item [class.disabled]="true">
+        <mat-icon matListItemIcon>history</mat-icon>
+        <span matListItemTitle>Histórico</span>
+        <span class="coming-soon">Em breve</span>
+      </a>
+      
+      <a mat-list-item [class.disabled]="true">
+        <mat-icon matListItemIcon>account_tree</mat-icon>
+        <span matListItemTitle>Branches</span>
+        <span class="coming-soon">Em breve</span>
+      </a>
+      
+      <mat-divider></mat-divider>
+      
+      <h3 class="sidebar-title">Ferramentas</h3>
+      
+      <a mat-list-item [class.disabled]="true">
+        <mat-icon matListItemIcon>folder</mat-icon>
+        <span matListItemTitle>Explorador</span>
+        <span class="coming-soon">Em breve</span>
+      </a>
+      
+      <a mat-list-item [class.disabled]="true">
+        <mat-icon matListItemIcon>search</mat-icon>
+        <span matListItemTitle>Buscar</span>
+        <span class="coming-soon">Em breve</span>
+      </a>
+      
+      <a mat-list-item [class.disabled]="true">
+        <mat-icon matListItemIcon>settings</mat-icon>
+        <span matListItemTitle>Configurações</span>
+        <span class="coming-soon">Em breve</span>
+      </a>
+    </mat-nav-list>

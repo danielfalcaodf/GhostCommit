@@ -1,0 +1,47 @@
+<div class="code-editor-container">
+    <mat-toolbar class="editor-toolbar">
+        <mat-toolbar-row>
+            <span>Editor de Código</span>
+            <span class="toolbar-spacer"></span>
+
+            <mat-form-field appearance="outline" class="language-select">
+                <mat-label>Linguagem</mat-label>
+                <mat-select [(value)]="selectedLanguage" (selectionChange)="onLanguageChange()">
+                    <mat-option value="javascript">JavaScript</mat-option>
+                    <mat-option value="typescript">TypeScript</mat-option>
+                    <mat-option value="python">Python</mat-option>
+                    <mat-option value="rust">Rust</mat-option>
+                    <mat-option value="json">JSON</mat-option>
+                    <mat-option value="html">HTML</mat-option>
+                    <mat-option value="css">CSS</mat-option>
+                    <mat-option value="scss">SCSS</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-icon-button (click)="saveFile()" matTooltip="Salvar arquivo">
+                <mat-icon>save</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="openFile()" matTooltip="Abrir arquivo">
+                <mat-icon>folder_open</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="newFile()" matTooltip="Novo arquivo">
+                <mat-icon>note_add</mat-icon>
+            </button>
+        </mat-toolbar-row>
+    </mat-toolbar>
+
+    <div class="editor-content">
+        <app-monaco-editor [language]="selectedLanguage" [code]="currentCode" [theme]="'vs-dark'"
+            [options]="editorOptions" (codeChange)="onCodeChange($event)">
+        </app-monaco-editor>
+    </div>
+
+    <div class="editor-status">
+        <span class="status-item">Linhas: {{ lineCount }}</span>
+        <span class="status-item">Caracteres: {{ charCount }}</span>
+        <span class="status-item">Linguagem: {{ selectedLanguage }}</span>
+        <span class="status-item" *ngIf="currentFileName">Arquivo: {{ currentFileName }}</span>
+    </div>
+</div>

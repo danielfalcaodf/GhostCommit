@@ -1,0 +1,330 @@
+.diff-viewer-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--surface-color);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+    }
+
+    .diff-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--outline-color);
+      background: var(--surface-variant-color);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .file-icon {
+      color: var(--primary-color);
+    }
+
+    .file-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .file-path {
+      margin: 0;
+      font-family: var(--font-family-mono);
+      font-size: 1rem;
+      color: var(--on-surface-color);
+    }
+
+    .file-stats {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stat {
+      font-size: 0.85em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .stat.addition {
+      background: rgba(76, 175, 80, 0.2);
+      color: var(--success-color);
+    }
+
+    .stat.deletion {
+      background: rgba(244, 67, 54, 0.2);
+      color: var(--error-color);
+    }
+
+    .stat.status {
+      background: var(--primary-color);
+      color: var(--on-primary-color);
+    }
+
+    .diff-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 48px;
+    }
+
+    .diff-tabs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .diff-tabs ::ng-deep .mat-mdc-tab-body-wrapper {
+      flex: 1;
+    }
+
+    .diff-content {
+      height: 500px;
+      position: relative;
+    }
+
+    .diff-content.side-by-side {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      height: 100%;
+    }
+
+    .diff-side {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface-color);
+    }
+
+    .side-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      background: var(--surface-variant-color);
+      border-bottom: 1px solid var(--outline-color);
+    }
+
+    .side-header h4 {
+      margin: 0;
+      font-size: 0.9em;
+      color: var(--on-surface-color);
+    }
+
+    .side-stats {
+      font-size: 0.8em;
+      font-weight: 500;
+    }
+
+    .diff-divider {
+      background: var(--outline-color);
+    }
+
+    .monaco-editor-container {
+      flex: 1;
+      min-height: 300px;
+    }
+
+    .monaco-editor-container.unified-diff {
+      height: 100%;
+    }
+
+    .hunks-container {
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .hunk-section {
+      margin-bottom: 24px;
+      border: 1px solid var(--outline-color);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+    }
+
+    .hunk-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface-variant-color);
+      font-family: var(--font-family-mono);
+      font-size: 0.85em;
+    }
+
+    .hunk-info {
+      flex: 1;
+      color: var(--on-surface-variant-color);
+    }
+
+    .hunk-stats {
+      display: flex;
+      gap: 8px;
+    }
+
+    .hunk-stats .addition {
+      color: var(--success-color);
+    }
+
+    .hunk-stats .deletion {
+      color: var(--error-color);
+    }
+
+    .hunk-content {
+      background: var(--surface-color);
+    }
+
+    .diff-line {
+      display: flex;
+      font-family: var(--font-family-mono);
+      font-size: 0.85em;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    .diff-line:hover {
+      background: var(--surface-variant-color);
+    }
+
+    .diff-line.line-addition {
+      background: rgba(76, 175, 80, 0.1);
+    }
+
+    .diff-line.line-deletion {
+      background: rgba(244, 67, 54, 0.1);
+    }
+
+    .line-numbers {
+      display: flex;
+      background: var(--surface-variant-color);
+      border-right: 1px solid var(--outline-color);
+    }
+
+    .line-number {
+      width: 60px;
+      padding: 4px 8px;
+      text-align: right;
+      color: var(--on-surface-variant-color);
+      font-size: 0.8em;
+    }
+
+    .line-number.old {
+      border-right: 1px solid var(--outline-color);
+    }
+
+    .line-content {
+      flex: 1;
+      display: flex;
+      padding: 4px 8px;
+    }
+
+    .line-prefix {
+      width: 20px;
+      font-weight: bold;
+    }
+
+    .line-addition .line-prefix {
+      color: var(--success-color);
+    }
+
+    .line-deletion .line-prefix {
+      color: var(--error-color);
+    }
+
+    .line-text {
+      flex: 1;
+      white-space: pre;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      text-align: center;
+      color: var(--on-surface-variant-color);
+      flex: 1;
+    }
+
+    .empty-state mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+
+    .blame-tooltip {
+      position: fixed;
+      z-index: 1000;
+      background: var(--surface-color);
+      border: 1px solid var(--outline-color);
+      border-radius: var(--border-radius-md);
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      min-width: 300px;
+      max-width: 400px;
+    }
+
+    .blame-content {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .blame-commit,
+    .blame-author,
+    .blame-date {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9em;
+    }
+
+    .blame-commit {
+      font-family: var(--font-family-mono);
+      color: var(--primary-color);
+    }
+
+    .blame-message {
+      font-style: italic;
+      color: var(--on-surface-variant-color);
+      font-size: 0.85em;
+      margin-top: 4px;
+    }
+
+    .menu-section {
+      padding: 16px;
+    }
+
+    .menu-section h4 {
+      margin: 0 0 12px 0;
+      font-size: 0.9em;
+      color: var(--on-surface-variant-color);
+    }
+
+    .menu-section mat-slide-toggle {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* Blame tooltip styles - aplicado globalmente para mat-tooltip */
+    ::ng-deep .blame-tooltip-content {
+      max-width: 300px;
+      white-space: pre-line;
+      font-family: var(--font-family-mono);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }

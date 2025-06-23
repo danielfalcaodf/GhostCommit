@@ -1,0 +1,26 @@
+.export-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-width: 500px;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .content-options, .filter-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .content-options h4, .filter-options h4 {
+      margin: 0;
+      color: var(--on-surface-color);
+      font-size: 0.95rem;
+    }
+
+    mat-checkbox {
+      margin-left: 1rem;
+    }

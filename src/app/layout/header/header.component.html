@@ -1,0 +1,34 @@
+<mat-toolbar class="header-toolbar">
+      <button mat-icon-button (click)="toggleSidenav.emit()" class="menu-button">
+        <mat-icon>menu</mat-icon>
+      </button>
+      
+      <div class="header-title">
+        <h1 class="gradient-text">🚀 GhostCommit</h1>
+        <span class="header-subtitle">Modern Git Interface</span>
+      </div>
+      
+      <div class="header-actions">
+        <app-theme-toggle></app-theme-toggle>
+        <button mat-icon-button matTooltip="Configurações">
+          <mat-icon>settings</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Notificações">
+          <mat-icon>notifications</mat-icon>
+        </button>
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="Perfil">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+      </div>
+    </mat-toolbar>
+    
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item>
+        <mat-icon>person</mat-icon>
+        <span>Perfil</span>
+      </button>
+      <button mat-menu-item>
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>

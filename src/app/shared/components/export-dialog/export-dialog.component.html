@@ -1,0 +1,419 @@
+<button mat-raised-button [matMenuTriggerFor]="exportMenu" color="accent">
+      <mat-icon>download</mat-icon>
+      Exportar
+    </button>
+
+    <mat-menu #exportMenu="matMenu">
+      <button mat-menu-item (click)="quickExport('patch')">
+        <mat-icon>description</mat-icon>
+        Patch (.patch)
+      </button>
+      
+      <button mat-menu-item (click)="quickExport('markdown')">
+        <mat-icon>article</mat-icon>
+        Markdown (.md)
+      </button>
+      
+      <button mat-menu-item (click)="quickExport('html')">
+        <mat-icon>web</mat-icon>
+        HTML (.html)
+      </button>
+      
+      <button mat-menu-item (click)="quickExport('json')">
+        <mat-icon>code</mat-icon>
+        JSON (.json)
+      </button>
+      
+      <mat-divider></mat-divider>
+      
+      <button mat-menu-item (click)="openExportDialog()">
+        <mat-icon>settings</mat-icon>
+        Opções Avançadas...
+      </button>
+    </mat-menu>
+  `
+})
+export class ExportButtonComponent {
+  @Input() comparisonResult: GitComparisonResult | null = null;
+  @Input() selectedFiles: string[] = [];
+  @Output() exportStarted = new EventEmitter<ExportOptions>();
+  @Output() exportCompleted = new EventEmitter<string>();
+
+  constructor(private dialog: MatDialog) {}
+
+  quickExport(format: 'patch' | 'markdown' | 'html' | 'json') {
+    if (!this.comparisonResult) return;
+
+    const options: ExportOptions = {
+      format,
+      includeStats: true,
+      includeFileList: true,
+      includeDiffs: true,
+      includeBlame: false,
+      selectedFilesOnly: false
+    };
+
+    this.performExport(options);
+  }
+
+  openExportDialog() {
+    if (!this.comparisonResult) return;
+
+    const dialogRef = this.dialog.open(ExportDialogComponent, {
+      width: '600px',
+      data: {
+        comparisonResult: this.comparisonResult,
+        selectedFiles: this.selectedFiles
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(options => {
+      if (options) {
+        this.performExport(options);
+      }
+    });
+  }
+
+  private performExport(options: ExportOptions) {
+    this.exportStarted.emit(options);
+
+    // Simular exportação
+    setTimeout(() => {
+      const filename = this.generateExport(options);
+      this.exportCompleted.emit(filename);
+    }, 1000);
+  }
+
+  private generateExport(options: ExportOptions): string {
+    if (!this.comparisonResult) return '';
+
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `diff-export-${timestamp}.${this.getFileExtension(options.format)}`;
+
+    let content = '';
+
+    switch (options.format) {
+      case 'patch':
+        content = this.generatePatch(options);
+        break;
+      case 'markdown':
+        content = this.generateMarkdown(options);
+        break;
+      case 'html':
+        content = this.generateHTML(options);
+        break;
+      case 'json':
+        content = this.generateJSON(options);
+        break;
+    }
+
+    this.downloadFile(content, filename);
+    return filename;
+  }
+
+  private getFileExtension(format: string): string {
+    switch (format) {
+      case 'patch': return 'patch';
+      case 'markdown': return 'md';
+      case 'html': return 'html';
+      case 'json': return 'json';
+      default: return 'txt';
+    }
+  }
+
+  private generatePatch(options: ExportOptions): string {
+    if (!this.comparisonResult) return '';
+
+    let patch = `From: ${this.comparisonResult.diff.fromCommit}\n`;
+    patch += `To: ${this.comparisonResult.diff.toCommit}\n`;
+    patch += `Date: ${new Date().toISOString()}\n\n`;
+
+    if (options.includeStats) {
+      const stats = this.comparisonResult.diff.stats;
+      patch += `---\n`;
+      patch += ` ${stats.totalFiles} files changed, ${stats.totalInsertions} insertions(+), ${stats.totalDeletions} deletions(-)\n\n`;
+    }
+
+    const filesToExport = options.selectedFilesOnly 
+      ? this.comparisonResult.diff.files.filter(f => this.selectedFiles.includes(f.path))
+      : this.comparisonResult.diff.files;
+
+    filesToExport.forEach(file => {
+      patch += `diff --git a/${file.path} b/${file.path}\n`;
+      
+      if (file.status === 'added') {
+        patch += `new file mode 100644\n`;
+        patch += `index 0000000..1234567\n`;
+      } else if (file.status === 'deleted') {
+        patch += `deleted file mode 100644\n`;
+        patch += `index 1234567..0000000\n`;
+      }
+
+      patch += `--- a/${file.path}\n`;
+      patch += `+++ b/${file.path}\n`;
+
+      const fileComparison = this.comparisonResult?.fileDetails.get(file.path);
+      if (fileComparison) {
+        fileComparison.hunks.forEach(hunk => {
+          patch += `${hunk.header}\n`;
+          hunk.lines.forEach(line => {
+            const prefix = line.type === 'addition' ? '+' : line.type === 'deletion' ? '-' : ' ';
+            patch += `${prefix}${line.content}\n`;
+          });
+        });
+      }
+      patch += '\n';
+    });
+
+    return patch;
+  }
+
+  private generateMarkdown(options: ExportOptions): string {
+    if (!this.comparisonResult) return '';
+
+    let md = `# Comparação de Commits\n\n`;
+    md += `**De:** \`${this.comparisonResult.diff.fromCommit}\`\n`;
+    md += `**Para:** \`${this.comparisonResult.diff.toCommit}\`\n`;
+    md += `**Data:** ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+
+    if (options.includeStats) {
+      const stats = this.comparisonResult.diff.stats;
+      md += `## Estatísticas\n\n`;
+      md += `- **Arquivos modificados:** ${stats.totalFiles}\n`;
+      md += `- **Linhas adicionadas:** +${stats.totalInsertions}\n`;
+      md += `- **Linhas removidas:** -${stats.totalDeletions}\n`;
+      md += `- **Mudança líquida:** ${stats.totalInsertions - stats.totalDeletions}\n\n`;
+    }
+
+    if (options.includeFileList) {
+      const filesToExport = options.selectedFilesOnly 
+        ? this.comparisonResult.diff.files.filter(f => this.selectedFiles.includes(f.path))
+        : this.comparisonResult.diff.files;
+
+      md += `## Arquivos Modificados\n\n`;
+      filesToExport.forEach(file => {
+        const statusIcon = this.getStatusIcon(file.status);
+        md += `- ${statusIcon} \`${file.path}\` (+${file.insertions}/-${file.deletions})\n`;
+      });
+      md += '\n';
+    }
+
+    if (options.includeDiffs) {
+      md += `## Diferenças\n\n`;
+      const filesToExport = options.selectedFilesOnly 
+        ? this.comparisonResult.diff.files.filter(f => this.selectedFiles.includes(f.path))
+        : this.comparisonResult.diff.files;
+
+      filesToExport.forEach(file => {
+        md += `### ${file.path}\n\n`;
+        md += `**Status:** ${file.status}\n`;
+        md += `**Alterações:** +${file.insertions}/-${file.deletions}\n\n`;
+
+        const fileComparison = this.comparisonResult?.fileDetails.get(file.path);
+        if (fileComparison) {
+          md += '```diff\n';
+          fileComparison.hunks.forEach(hunk => {
+            md += `${hunk.header}\n`;
+            hunk.lines.forEach(line => {
+              const prefix = line.type === 'addition' ? '+' : line.type === 'deletion' ? '-' : ' ';
+              md += `${prefix}${line.content}\n`;
+            });
+          });
+          md += '```\n\n';
+        }
+      });
+    }
+
+    return md;
+  }
+
+  private generateHTML(options: ExportOptions): string {
+    if (!this.comparisonResult) return '';
+
+    let html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparação de Commits - GhostCommit</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; margin: 20px; background: #0f0f0f; color: #e0e0e0; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .stats { background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .file-list { background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .file-item { margin: 5px 0; font-family: monospace; }
+        .added { color: #4caf50; }
+        .modified { color: #2196f3; }
+        .deleted { color: #f44336; }
+        .renamed { color: #ff9800; }
+        .diff-section { background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .diff-code { background: #000; padding: 15px; border-radius: 4px; overflow-x: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; }
+        .addition { background: rgba(76, 175, 80, 0.2); }
+        .deletion { background: rgba(244, 67, 54, 0.2); }
+        h1, h2, h3 { color: #64b5f6; }
+    </style>
+</head>
+<body>`;
+
+    html += `<div class="header">
+        <h1>🔍 Comparação de Commits</h1>
+        <p><strong>De:</strong> <code>${this.comparisonResult.diff.fromCommit}</code></p>
+        <p><strong>Para:</strong> <code>${this.comparisonResult.diff.toCommit}</code></p>
+        <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+    </div>`;
+
+    if (options.includeStats) {
+      const stats = this.comparisonResult.diff.stats;
+      html += `<div class="stats">
+        <h2>📊 Estatísticas</h2>
+        <ul>
+            <li><strong>Arquivos modificados:</strong> ${stats.totalFiles}</li>
+            <li><strong>Linhas adicionadas:</strong> <span class="added">+${stats.totalInsertions}</span></li>
+            <li><strong>Linhas removidas:</strong> <span class="deleted">-${stats.totalDeletions}</span></li>
+            <li><strong>Mudança líquida:</strong> ${stats.totalInsertions - stats.totalDeletions}</li>
+        </ul>
+      </div>`;
+    }
+
+    // Continue with file list and diffs...
+    html += '</body></html>';
+    return html;
+  }
+
+  private generateJSON(options: ExportOptions): string {
+    if (!this.comparisonResult) return '';
+
+    const exportData = {
+      metadata: {
+        exportDate: new Date().toISOString(),
+        tool: 'GhostCommit',
+        options: options
+      },
+      comparison: {
+        fromCommit: this.comparisonResult.diff.fromCommit,
+        toCommit: this.comparisonResult.diff.toCommit,
+        stats: this.comparisonResult.diff.stats
+      },
+      files: options.selectedFilesOnly 
+        ? this.comparisonResult.diff.files.filter(f => this.selectedFiles.includes(f.path))
+        : this.comparisonResult.diff.files,
+      diffs: options.includeDiffs ? 
+        Object.fromEntries(this.comparisonResult.fileDetails) : undefined
+    };
+
+    return JSON.stringify(exportData, null, 2);
+  }
+
+  private getStatusIcon(status: string): string {
+    switch (status) {
+      case 'added': return '✅';
+      case 'modified': return '📝';
+      case 'deleted': return '❌';
+      case 'renamed': return '🔄';
+      default: return '📄';
+    }
+  }
+
+  private downloadFile(content: string, filename: string) {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+}
+
+@Component({
+  selector: 'app-export-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatProgressSpinnerModule
+  ],
+  template: `
+    <h2 mat-dialog-title>
+      <mat-icon>download</mat-icon>
+      Opções de Exportação
+    </h2>
+
+    <mat-dialog-content [formGroup]="exportForm">
+      <div class="export-options">
+        <!-- Formato -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Formato de exportação</mat-label>
+          <mat-select formControlName="format">
+            <mat-option value="patch">Git Patch (.patch)</mat-option>
+            <mat-option value="markdown">Markdown (.md)</mat-option>
+            <mat-option value="html">HTML (.html)</mat-option>
+            <mat-option value="json">JSON (.json)</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Opções de Conteúdo -->
+        <div class="content-options">
+          <h4>Incluir no relatório:</h4>
+          
+          <mat-checkbox formControlName="includeStats">
+            Estatísticas resumidas
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="includeFileList">
+            Lista de arquivos modificados
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="includeDiffs">
+            Diferenças completas (diffs)
+          </mat-checkbox>
+          
+          <mat-checkbox formControlName="includeBlame">
+            Informações de blame
+          </mat-checkbox>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-options">
+          <h4>Filtros:</h4>
+          
+          <mat-checkbox formControlName="selectedFilesOnly">
+            Apenas arquivos selecionados ({{ data.selectedFiles.length }})
+          </mat-checkbox>
+        </div>
+
+        <!-- Template personalizado -->
+        <mat-form-field 
+          *ngIf="exportForm.get('format')?.value === 'html'" 
+          appearance="outline" 
+          class="full-width">
+          <mat-label>CSS personalizado (opcional)</mat-label>
+          <textarea 
+            matInput 
+            formControlName="customTemplate" 
+            rows="4" 
+            placeholder="/* CSS adicional para o relatório HTML */"></textarea>
+        </mat-form-field>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="cancel()">
+        Cancelar
+      </button>
+      
+      <button mat-raised-button color="primary" (click)="export()" [disabled]="!exportForm.valid">
+        <mat-icon>download</mat-icon>
+        Exportar
+      </button>
+    </mat-dialog-actions>

@@ -1,0 +1,468 @@
+// Importar apenas o sistema de grid do Bootstrap
+@import 'bootstrap/dist/css/bootstrap-grid.min.css';
+@import 'bootstrap/dist/css/bootstrap-utilities.min.css';
+
+// Tema Angular Material Dark
+@import '@angular/material/prebuilt-themes/cyan-orange.css';
+
+// Variáveis do Tema Dark Aprimorado - Tons de Preto, Cinza e Azul Escuro
+:root {
+  // Cores primárias - Azul
+  --primary-blue: #1e88e5;
+  --primary-blue-dark: #1565c0;
+  --primary-blue-light: #42a5f5;
+  --primary-blue-contrast: #ffffff;
+
+  // Cores accent - Azul ciano
+  --accent-blue: #00acc1;
+  --accent-blue-dark: #00838f;
+  --accent-blue-light: #26c6da;
+  --accent-blue-contrast: #ffffff;
+
+  // Paleta de grays - Tema Dark
+  --gray-50: #fafafa;
+  --gray-100: #f5f5f5;
+  --gray-200: #eeeeee;
+  --gray-300: #e0e0e0;
+  --gray-400: #bdbdbd;
+  --gray-500: #9e9e9e;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-850: #303030;
+  --gray-900: #212121;
+  --gray-950: #121212;
+  --gray-975: #0a0a0a;
+
+  // Backgrounds
+  --background-primary: var(--gray-950);
+  --background-secondary: var(--gray-900);
+  --background-tertiary: var(--gray-850);
+
+  // Surfaces
+  --surface-primary: var(--gray-900);
+  --surface-secondary: var(--gray-850);
+  --surface-tertiary: var(--gray-800);
+  --surface-variant: var(--gray-700);
+
+  // Text colors
+  --text-primary: var(--gray-50);
+  --text-secondary: var(--gray-300);
+  --text-tertiary: var(--gray-400);
+  --text-disabled: var(--gray-600);
+
+  // Border colors
+  --border-color: var(--gray-700);
+  --border-color-light: var(--gray-600);
+  --border-color-dark: var(--gray-800);
+
+  // State colors
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --info-color: var(--primary-blue);
+
+  // Semantic colors for Material Design
+  --surface-color: var(--surface-primary);
+  --on-surface-color: var(--text-primary);
+  --surface-variant-color: var(--surface-variant);
+  --on-surface-variant-color: var(--text-secondary);
+  --primary-color: var(--primary-blue);
+  --on-primary-color: var(--primary-blue-contrast);
+  --outline-color: var(--border-color);
+}
+
+// Tema claro (quando .light-theme estiver ativo)
+.light-theme {
+  // Backgrounds
+  --background-primary: var(--gray-50);
+  --background-secondary: var(--gray-100);  
+  --background-tertiary: var(--gray-200);
+
+  // Surfaces
+  --surface-primary: #ffffff;
+  --surface-secondary: var(--gray-50);
+  --surface-tertiary: var(--gray-100);
+  --surface-variant: var(--gray-200);
+
+  // Text colors
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-700);
+  --text-tertiary: var(--gray-600);
+  --text-disabled: var(--gray-400);
+
+  // Border colors
+  --border-color: var(--gray-300);
+  --border-color-light: var(--gray-200);
+  --border-color-dark: var(--gray-400);
+
+  // Semantic colors update
+  --surface-color: var(--surface-primary);
+  --on-surface-color: var(--text-primary);
+  --surface-variant-color: var(--surface-variant);
+  --on-surface-variant-color: var(--text-secondary);
+  --outline-color: var(--border-color);
+}
+
+// Garantir que o tema escuro seja aplicado por padrão
+body:not(.light-theme) {
+  --background-primary: var(--gray-950);
+  --surface-primary: var(--gray-900);
+}
+
+// Variáveis de fonte e design
+$font-family-primary: 'Roboto', 'Helvetica Neue', sans-serif;
+$font-family-secondary: 'Inter', 'Avenir', 'Helvetica', 'Arial', sans-serif;
+$font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+$border-radius: 8px;
+$border-radius-small: 4px;
+$border-radius-large: 12px;
+
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+$box-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.4);
+$box-shadow-focus: 0 0 0 3px rgba(30, 136, 229, 0.3);
+
+// Mixins SCSS
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin card-style {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+@mixin hover-effect {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-hover;
+    border-color: var(--primary-blue-light);
+  }
+}
+
+@mixin glass-effect {
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color-light);
+}
+
+@mixin gradient-text {
+  background: linear-gradient(135deg, var(--primary-blue-light), var(--accent-blue-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Reset global com tema dark
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background: var(--background-primary);
+  color: var(--text-primary);
+}
+
+body {
+  font-family: $font-family-primary;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Scrollbar personalizada
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-tertiary);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--primary-blue);
+  }
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--background-secondary);
+}
+
+// Classes utilitárias
+.flex-center {
+  @include flex-center;
+}
+
+.card {
+  @include card-style;
+  @include hover-effect;
+}
+
+.glass {
+  @include glass-effect;
+}
+
+.gradient-text {
+  @include gradient-text;
+}
+
+// Botões personalizados
+.btn-primary-custom {
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: $border-radius;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: $box-shadow-hover;
+    background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
+  }
+  
+  &:focus {
+    box-shadow: $box-shadow-focus;
+  }
+}
+
+// Containers personalizados
+.container-custom {
+  background: var(--background-secondary);
+  border-radius: $border-radius-large;
+  padding: 2rem;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .container-custom {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+}
+
+// Animações
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+// ========== ESTILOS GLOBAIS PARA NOTIFICAÇÕES MATSNACKBAR ==========
+
+// Base para todas as notificações
+.mat-mdc-snack-bar-container {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  font-size: 14px !important;
+  max-width: 400px !important;
+}
+
+.mat-mdc-snack-bar-action {
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+  margin-left: 12px !important;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+// Notificações coloridas
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+  .mat-mdc-snack-bar-action { color: #c8e6c9 !important; }
+}
+
+.error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+  .mat-mdc-snack-bar-action { color: #ffcdd2 !important; }
+}
+
+.warning-snackbar {
+  background-color: #ff9800 !important;
+  color: white !important;
+  .mat-mdc-snack-bar-action { color: #ffe0b2 !important; }
+}
+
+.info-snackbar {
+  background-color: #2196f3 !important;
+  color: white !important;
+  .mat-mdc-snack-bar-action { color: #bbdefb !important; }
+}
+
+// ================================================
+// Material Design Component Color Overrides
+// ================================================
+
+// Sobrescritas para garantir que as cores personalizadas sejam aplicadas
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-fab.mat-accent,
+.mat-mdc-mini-fab.mat-accent {
+  --mdc-filled-button-container-color: var(--accent-blue) !important;
+  --mdc-filled-button-label-text-color: var(--accent-blue-contrast) !important;
+  --mdc-fab-container-color: var(--accent-blue) !important;
+  --mdc-fab-label-text-color: var(--accent-blue-contrast) !important;
+  
+  &:hover {
+    --mdc-filled-button-container-color: var(--accent-blue-dark) !important;
+    --mdc-fab-container-color: var(--accent-blue-dark) !important;
+  }
+}
+
+.mat-mdc-outlined-button.mat-accent {
+  --mdc-outlined-button-outline-color: var(--accent-blue) !important;
+  --mdc-outlined-button-label-text-color: var(--accent-blue) !important;
+  
+  &:hover {
+    --mdc-outlined-button-outline-color: var(--accent-blue-dark) !important;
+    --mdc-outlined-button-label-text-color: var(--accent-blue-dark) !important;
+  }
+}
+
+.mat-mdc-text-button.mat-accent {
+  --mdc-text-button-label-text-color: var(--accent-blue) !important;
+  
+  &:hover {
+    --mdc-text-button-label-text-color: var(--accent-blue-dark) !important;
+  }
+}
+
+// Chips accent
+.mat-mdc-chip.mat-accent {
+  --mdc-chip-elevated-container-color: var(--accent-blue) !important;
+  --mdc-chip-label-text-color: var(--accent-blue-contrast) !important;
+}
+
+// Slide toggle accent
+.mat-mdc-slide-toggle.mat-accent {
+  --mdc-switch-selected-track-color: var(--accent-blue) !important;
+  --mdc-switch-selected-handle-color: var(--accent-blue-light) !important;
+  --mdc-switch-selected-hover-handle-color: var(--accent-blue-light) !important;
+  --mdc-switch-selected-pressed-handle-color: var(--accent-blue-light) !important;
+}
+
+// Badge accent
+.mat-badge-accent .mat-badge-content {
+  background-color: var(--accent-blue) !important;
+  color: var(--accent-blue-contrast) !important;
+}
+
+// Icon accent
+.mat-icon.mat-accent,
+mat-icon[color="accent"] {
+  color: var(--accent-blue) !important;
+}
+
+// Progress spinner accent
+.mat-mdc-progress-spinner.mat-accent circle {
+  stroke: var(--accent-blue) !important;
+}
+
+// Checkbox accent
+.mat-mdc-checkbox.mat-accent {
+  --mdc-checkbox-selected-checkmark-color: var(--accent-blue-contrast) !important;
+  --mdc-checkbox-selected-focus-icon-color: var(--accent-blue) !important;
+  --mdc-checkbox-selected-hover-icon-color: var(--accent-blue) !important;
+  --mdc-checkbox-selected-icon-color: var(--accent-blue) !important;
+  --mdc-checkbox-selected-pressed-icon-color: var(--accent-blue) !important;
+}
+
+// Radio button accent
+.mat-mdc-radio-button.mat-accent {
+  --mdc-radio-selected-focus-icon-color: var(--accent-blue) !important;
+  --mdc-radio-selected-hover-icon-color: var(--accent-blue) !important;
+  --mdc-radio-selected-icon-color: var(--accent-blue) !important;
+  --mdc-radio-selected-pressed-icon-color: var(--accent-blue) !important;
+}
+
+// Form field accent
+.mat-mdc-form-field.mat-accent {
+  --mdc-filled-text-field-focus-active-indicator-color: var(--accent-blue) !important;
+  --mdc-filled-text-field-focus-label-text-color: var(--accent-blue) !important;
+  --mdc-outlined-text-field-focus-outline-color: var(--accent-blue) !important;
+  --mdc-outlined-text-field-focus-label-text-color: var(--accent-blue) !important;
+}
+
+// Tabs accent
+.mat-mdc-tab-group.mat-accent {
+  --mdc-tab-indicator-active-indicator-color: var(--accent-blue) !important;
+  --mat-tab-header-active-label-text-color: var(--accent-blue) !important;
+  --mat-tab-header-inactive-hover-label-text-color: var(--accent-blue-light) !important;
+}
+
+// Menu accent
+.mat-mdc-menu-item.mat-accent {
+  --mat-menu-item-label-text-color: var(--accent-blue) !important;
+}
+
+// ================================================
+// Primary Color Overrides
+// ================================================
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary {
+  --mdc-filled-button-container-color: var(--primary-blue) !important;
+  --mdc-filled-button-label-text-color: var(--primary-blue-contrast) !important;
+  --mdc-fab-container-color: var(--primary-blue) !important;
+  --mdc-fab-label-text-color: var(--primary-blue-contrast) !important;
+  
+  &:hover {
+    --mdc-filled-button-container-color: var(--primary-blue-dark) !important;
+    --mdc-fab-container-color: var(--primary-blue-dark) !important;
+  }
+}

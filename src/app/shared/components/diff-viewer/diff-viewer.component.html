@@ -1,0 +1,137 @@
+<div class="diff-viewer-container">
+      <!-- Header com controles -->
+      <div class="diff-header">
+        <div class="file-info">
+          <mat-icon class="file-icon">{{ getFileIcon() }}</mat-icon>
+          <div class="file-details">
+            <h3 class="file-path">{{ fileComparison?.file?.path || 'Selecione um arquivo' }}</h3>
+            <div *ngIf="fileComparison" class="file-stats">
+              <span class="stat addition" *ngIf="fileComparison.file.insertions > 0">
+                +{{ fileComparison.file.insertions }}
+              </span>
+              <span class="stat deletion" *ngIf="fileComparison.file.deletions > 0">
+                -{{ fileComparison.file.deletions }}
+              </span>
+              <span class="stat status" [class]="'status-' + fileComparison.file.status">
+                {{ getStatusText(fileComparison.file.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="diff-controls">
+          <button mat-icon-button [matMenuTriggerFor]="viewMenu" matTooltip="Opções de visualização">
+            <mat-icon>settings</mat-icon>
+          </button>
+          
+          <mat-menu #viewMenu="matMenu">
+            <div class="menu-section">
+              <h4>Visualização</h4>
+              <mat-slide-toggle 
+                [(ngModel)]="showBlame" 
+                (change)="toggleBlame()">
+                Mostrar Blame
+              </mat-slide-toggle>
+              <mat-slide-toggle 
+                [(ngModel)]="wrapText" 
+                (change)="toggleWordWrap()">
+                Quebra de Linha
+              </mat-slide-toggle>
+              <mat-slide-toggle 
+                [(ngModel)]="showWhitespace" 
+                (change)="toggleWhitespace()">
+                Espaços em Branco
+              </mat-slide-toggle>
+            </div>
+          </mat-menu>
+
+          <button mat-icon-button (click)="downloadDiff()" matTooltip="Baixar diff">
+            <mat-icon>download</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <span>Carregando comparação...</span>
+      </div>
+
+      <!-- Tabs de visualização -->
+      <mat-tab-group *ngIf="!loading && fileComparison" class="diff-tabs" [(selectedIndex)]="selectedTab">
+        <!-- Diff Unificado -->
+        <mat-tab label="Diff Unificado">
+          <div class="diff-content">
+            <div #unifiedEditor class="monaco-editor-container unified-diff"></div>
+          </div>
+        </mat-tab>
+
+        <!-- Side by Side -->
+        <mat-tab label="Side by Side">
+          <div class="diff-content side-by-side">
+            <div class="diff-side">
+              <div class="side-header">
+                <h4>{{ fromCommit || 'Original' }}</h4>
+                <span class="side-stats deletion">-{{ fileComparison.file.deletions }}</span>
+              </div>
+              <div #originalEditor class="monaco-editor-container"></div>
+            </div>
+            
+            <div class="diff-divider"></div>
+            
+            <div class="diff-side">
+              <div class="side-header">
+                <h4>{{ toCommit || 'Modificado' }}</h4>
+                <span class="side-stats addition">+{{ fileComparison.file.insertions }}</span>
+              </div>
+              <div #modifiedEditor class="monaco-editor-container"></div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Hunks View -->
+        <mat-tab label="Por Seções">
+          <div class="hunks-container">
+            <div *ngFor="let hunk of fileComparison.hunks; trackBy: trackHunk" class="hunk-section">
+              <div class="hunk-header">
+                <mat-icon>code</mat-icon>
+                <span class="hunk-info">{{ hunk.header }}</span>
+                <span class="hunk-stats">
+                  <span class="addition">+{{ getHunkAdditions(hunk) }}</span>
+                  <span class="deletion">-{{ getHunkDeletions(hunk) }}</span>
+                </span>
+              </div>
+              
+              <div class="hunk-content">
+                <div 
+                  *ngFor="let line of hunk.lines; trackBy: trackLine" 
+                  class="diff-line"
+                  [class]="'line-' + line.type"
+                  [matTooltip]="getBlameTooltip(line)"
+                  [matTooltipDisabled]="!showBlame || !line.blameInfo"
+                  matTooltipClass="blame-tooltip-content"
+                  matTooltipPosition="right">
+                  
+                  <div class="line-numbers">
+                    <span class="line-number old">{{ line.oldLineNumber || '' }}</span>
+                    <span class="line-number new">{{ line.newLineNumber || '' }}</span>
+                  </div>
+                  
+                  <div class="line-content">
+                    <span class="line-prefix">{{ getLinePrefix(line.type) }}</span>
+                    <span class="line-text" [innerHTML]="highlightSyntax(line.content)"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+
+      <!-- Estado vazio -->
+      <div *ngIf="!loading && !fileComparison" class="empty-state">
+        <mat-icon>compare</mat-icon>
+        <h3>Selecione um arquivo para comparar</h3>
+        <p>Escolha um arquivo na árvore para visualizar as diferenças</p>
+      </div>
+    </div>

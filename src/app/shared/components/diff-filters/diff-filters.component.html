@@ -1,0 +1,186 @@
+<div class="diff-filters-container">
+    <mat-expansion-panel class="filters-panel">
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                <mat-icon>filter_list</mat-icon>
+                Filtros Avançados
+            </mat-panel-title>
+            <mat-panel-description>
+                {{ getActiveFiltersCount() }} filtros ativos
+            </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="filters-content" [formGroup]="filtersForm">
+            <!-- Filtro por Autor -->
+            <div class="filter-section">
+                <h4>Autores</h4>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Filtrar por autor</mat-label>
+                    <mat-chip-grid #authorChipGrid>
+                        <mat-chip-row *ngFor="let author of selectedAuthors" (removed)="removeAuthor(author)"
+                            [removable]="true">
+                            {{ author }}
+                            <button matChipRemove>
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip-row>
+                    </mat-chip-grid>
+                    <input [matChipInputFor]="authorChipGrid" [matAutocomplete]="authorAuto"
+                        formControlName="authorInput" placeholder="Digite o nome do autor...">
+                    <mat-autocomplete #authorAuto="matAutocomplete" (optionSelected)="addAuthor($event.option.value)">
+                        <mat-option *ngFor="let author of availableAuthors" [value]="author">
+                            {{ author }}
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+
+            <!-- Filtro por Extensão -->
+            <div class="filter-section">
+                <h4>Tipos de Arquivo</h4>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Filtrar por extensão</mat-label>
+                    <mat-chip-grid #extensionChipGrid>
+                        <mat-chip-row *ngFor="let ext of selectedExtensions" (removed)="removeExtension(ext)"
+                            [removable]="true">
+                            .{{ ext }}
+                            <button matChipRemove>
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip-row>
+                    </mat-chip-grid>
+                    <input [matChipInputFor]="extensionChipGrid" [matAutocomplete]="extAuto"
+                        formControlName="extensionInput" placeholder="js, ts, py, etc...">
+                    <mat-autocomplete #extAuto="matAutocomplete" (optionSelected)="addExtension($event.option.value)">
+                        <mat-option *ngFor="let ext of availableExtensions" [value]="ext">
+                            .{{ ext }}
+                        </mat-option>
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+
+            <!-- Filtro por Data -->
+            <div class="filter-section">
+                <h4>Intervalo de Datas</h4>
+                <div class="date-range">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Data inicial</mat-label>
+                        <input matInput [matDatepicker]="fromPicker" formControlName="dateFrom">
+                        <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #fromPicker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Data final</mat-label>
+                        <input matInput [matDatepicker]="toPicker" formControlName="dateTo">
+                        <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+                        <mat-datepicker #toPicker></mat-datepicker>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Pesquisa de Texto -->
+            <div class="filter-section">
+                <h4>Pesquisa de Texto</h4>
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Buscar no conteúdo</mat-label>
+                    <input matInput formControlName="searchText" placeholder="Texto para buscar no diff...">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Tipo de busca</mat-label>
+                    <mat-select formControlName="searchType">
+                        <mat-option value="content">Busca no conteúdo</mat-option>
+                        <mat-option value="pickaxe">Git Pickaxe (-S)</mat-option>
+                        <mat-option value="grep">Git Grep (-G)</mat-option>
+                    </mat-select>
+                    <mat-hint>
+                        Pickaxe: busca por adição/remoção de texto específico
+                    </mat-hint>
+                </mat-form-field>
+            </div>
+
+            <!-- Filtros de Status -->
+            <div class="filter-section">
+                <h4>Status dos Arquivos</h4>
+                <div class="status-toggles">
+                    <mat-slide-toggle formControlName="onlyModified" color="primary">
+                        <mat-icon>edit</mat-icon>
+                        Apenas Modificados
+                    </mat-slide-toggle>
+
+                    <mat-slide-toggle formControlName="onlyAdded" color="accent">
+                        <mat-icon>add</mat-icon>
+                        Apenas Adicionados
+                    </mat-slide-toggle>
+
+                    <mat-slide-toggle formControlName="onlyDeleted" color="warn">
+                        <mat-icon>remove</mat-icon>
+                        Apenas Removidos
+                    </mat-slide-toggle>
+
+                    <mat-slide-toggle formControlName="onlyRenamed">
+                        <mat-icon>drive_file_move</mat-icon>
+                        Apenas Renomeados
+                    </mat-slide-toggle>
+                </div>
+            </div>
+
+            <!-- Filtro por Tamanho -->
+            <div class="filter-section">
+                <h4>Quantidade de Alterações</h4>
+                <div class="size-range">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Mín. linhas alteradas</mat-label>
+                        <input matInput type="number" formControlName="minLines" min="0">
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Máx. linhas alteradas</mat-label>
+                        <input matInput type="number" formControlName="maxLines" min="0">
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="filter-actions">
+                <button mat-raised-button color="primary" (click)="applyFilters()">
+                    <mat-icon>check</mat-icon>
+                    Aplicar Filtros
+                </button>
+
+                <button mat-button (click)="clearFilters()">
+                    <mat-icon>clear</mat-icon>
+                    Limpar Tudo
+                </button>
+
+                <button mat-button (click)="savePreset()" matTooltip="Salvar configuração atual">
+                    <mat-icon>bookmark</mat-icon>
+                    Salvar Preset
+                </button>
+            </div>
+        </div>
+    </mat-expansion-panel>
+
+    <!-- Filtros Ativos -->
+    <div *ngIf="hasActiveFilters()" class="active-filters">
+        <h5>Filtros Ativos:</h5>
+        <div class="active-chips">
+            <mat-chip *ngFor="let author of selectedAuthors" (removed)="removeAuthor(author)" [removable]="true">
+                Autor: {{ author }}
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+
+            <mat-chip *ngFor="let ext of selectedExtensions" (removed)="removeExtension(ext)" [removable]="true">
+                .{{ ext }}
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+
+            <mat-chip *ngIf="filtersForm.get('searchText')?.value" (removed)="clearSearchText()" [removable]="true">
+                "{{ filtersForm.get('searchText')?.value }}"
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+        </div>
+    </div>
+</div>

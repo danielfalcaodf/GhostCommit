@@ -1,0 +1,17 @@
+<app-navigation-shell
+      [currentRepository]="currentRepository"
+      [navigationItems]="navigationItems"
+      [quickActions]="quickActions"
+      [pageTitle]="pageTitle"
+      [pageSubtitle]="pageSubtitle"
+      (navigationChange)="onNavigationChange($event)"
+      (sidenavToggle)="onSidenavToggle($event)">
+      
+      <!-- Toolbar Actions -->
+      <div slot="toolbar-actions" class="custom-toolbar-actions">
+        <!-- Adicione aqui ações customizadas da toolbar -->
+      </div>
+
+      <!-- Main Content -->
+      <router-outlet></router-outlet>
+    </app-navigation-shell>

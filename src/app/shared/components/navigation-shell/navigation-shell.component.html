@@ -1,0 +1,111 @@
+<mat-sidenav-container class="navigation-container">
+  <!-- Sidenav -->
+  <mat-sidenav #sidenav [mode]="sidenavMode" [opened]="sidenavOpened" [fixedInViewport]="true" [fixedTopGap]="64"
+    class="navigation-sidenav">
+
+    <!-- Repository Info -->
+    <div *ngIf="currentRepository" class="repo-info">
+      <div class="repo-header">
+        <mat-icon class="repo-icon">folder_open</mat-icon>
+        <div class="repo-details">
+          <h4 class="repo-name">{{ currentRepository.name }}</h4>
+          <span class="repo-branch">
+            <mat-icon>branch_right</mat-icon>
+            {{ currentRepository.current_branch }}
+          </span>
+        </div>
+      </div>
+      <div class="repo-status" [class.clean]="currentRepository.isClean">
+        <mat-icon>{{ currentRepository.isClean ? 'check_circle' : 'warning' }}</mat-icon>
+        <span>{{ currentRepository.isClean ? 'Limpo' : 'Modificado' }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation Items -->
+    <mat-nav-list class="navigation-list">
+      <ng-container *ngFor="let item of navigationItems">
+        <!-- Item with route -->
+        <mat-list-item *ngIf="item.route && !item.children" [routerLink]="item.route" routerLinkActive="active"
+          [class.disabled]="item.disabled" [matTooltip]="item.label" matTooltipPosition="right">
+
+          <mat-icon matListItemIcon [matBadge]="item.badge" matBadgeColor="accent">
+            {{ item.icon }}
+          </mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </mat-list-item>
+
+        <!-- Item with action -->
+        <mat-list-item *ngIf="item.action && !item.children" (click)="executeAction(item)"
+          [class.disabled]="item.disabled" [matTooltip]="item.label" matTooltipPosition="right" class="action-item">
+
+          <mat-icon matListItemIcon [matBadge]="item.badge" matBadgeColor="accent">
+            {{ item.icon }}
+          </mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </mat-list-item>
+
+        <!-- Item with children (submenu) -->
+        <div *ngIf="item.children" class="nav-group">
+          <mat-list-item class="nav-group-header">
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </mat-list-item>
+
+          <div class="nav-submenu">
+            <mat-list-item *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active"
+              [class.disabled]="child.disabled" class="nav-child-item">
+
+              <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+              <span matListItemTitle>{{ child.label }}</span>
+            </mat-list-item>
+          </div>
+        </div>
+
+        <mat-divider *ngIf="item === navigationItems[navigationItems.length - 2]"></mat-divider>
+      </ng-container>
+    </mat-nav-list>
+
+    <!-- Footer Actions -->
+    <div class="sidenav-footer">
+      <button mat-icon-button (click)="toggleSidenav()" matTooltip="Recolher menu">
+        <mat-icon>{{ sidenavOpened ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+      </button>
+    </div>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content class="main-content">
+    <!-- Toolbar -->
+    <mat-toolbar class="main-toolbar" color="primary">
+      <button mat-icon-button (click)="toggleSidenav()" [class.hide-on-desktop]="sidenavOpened">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <!-- Title Section -->
+      <div class="toolbar-title">
+        <h1>{{ pageTitle }}</h1>
+        <span *ngIf="pageSubtitle" class="toolbar-subtitle">{{ pageSubtitle }}</span>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <!-- Toolbar Actions -->
+      <div class="toolbar-actions">
+        <ng-content select="[slot=toolbar-actions]"></ng-content>
+        <app-theme-toggle></app-theme-toggle>
+        <!-- Quick Actions -->
+        <button *ngFor="let action of quickActions" mat-icon-button (click)="executeAction(action)"
+          [matTooltip]="action.label" [disabled]="action.disabled">
+          <mat-icon [matBadge]="action.badge" matBadgeColor="accent">
+            {{ action.icon }}
+          </mat-icon>
+        </button>
+      </div>
+    </mat-toolbar>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <ng-content></ng-content>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

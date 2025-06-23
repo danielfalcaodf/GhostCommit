@@ -1,0 +1,301 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  RUST_VERSION: '1.70.0'
+
+jobs:
+  # ==========================================
+  # Frontend Tests (Angular)
+  # ==========================================
+  frontend-tests:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🔍 Lint TypeScript
+      run: npm run lint
+      
+    - name: 🧪 Run unit tests
+      run: npm run test:ci
+      
+    - name: 🏗️ Build Angular app
+      run: npm run build
+      
+    - name: 📊 Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: frontend
+        name: frontend-coverage
+        
+  # ==========================================
+  # Backend Tests (Rust)
+  # ==========================================
+  backend-tests:
+    name: 🦀 Backend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🦀 Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        override: true
+        components: rustfmt, clippy
+        
+    - name: 💾 Cache Rust dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          src-tauri/target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: 🔍 Check Rust formatting
+      run: cd src-tauri && cargo fmt -- --check
+      
+    - name: 🔍 Lint Rust code
+      run: cd src-tauri && cargo clippy -- -D warnings
+      
+    - name: 🧪 Run Rust tests
+      run: cd src-tauri && cargo test
+      
+    - name: 🏗️ Build Rust app
+      run: cd src-tauri && cargo build --release
+
+  # ==========================================
+  # Build Desktop App
+  # ==========================================
+  build-desktop:
+    name: 🖥️ Build Desktop App
+    needs: [frontend-tests, backend-tests]
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+        
+    runs-on: ${{ matrix.platform }}
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 🦀 Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        override: true
+        
+    - name: 🔧 Install system dependencies (Ubuntu)
+      if: matrix.platform == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+        
+    - name: 📋 Install Node dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build Tauri app
+      run: npm run tauri build
+      
+    - name: 📤 Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ghostcommit-${{ matrix.platform }}
+        path: |
+          src-tauri/target/release/bundle/
+          !src-tauri/target/release/bundle/**/*.map
+
+  # ==========================================
+  # E2E Tests
+  # ==========================================
+  e2e-tests:
+    name: 🎭 E2E Tests
+    needs: [frontend-tests, backend-tests]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 🦀 Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        override: true
+        
+    - name: 🔧 Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🎭 Install Playwright
+      run: npx playwright install --with-deps
+      
+    - name: 🧪 Run E2E tests
+      run: npm run e2e
+      
+    - name: 📤 Upload E2E artifacts
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: e2e-screenshots
+        path: test-results/
+
+  # ==========================================
+  # Security Audit
+  # ==========================================
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 🔍 Audit npm packages
+      run: npm audit --audit-level moderate
+      
+    - name: 🦀 Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        override: true
+        
+    - name: 🔍 Audit Rust dependencies
+      run: |
+        cargo install cargo-audit
+        cd src-tauri && cargo audit
+
+  # ==========================================
+  # Release (only on main branch)
+  # ==========================================
+  release:
+    name: 🚀 Release
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [frontend-tests, backend-tests, build-desktop, e2e-tests, security-audit]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 📝 Generate changelog
+      run: |
+        echo "Generating changelog..."
+        # Aqui você pode adicionar um gerador de changelog automático
+        
+    - name: 🏷️ Create release tag
+      if: startsWith(github.event.head_commit.message, 'chore(release):')
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        git tag -a "v$VERSION" -m "Release v$VERSION"
+        git push origin "v$VERSION"
+        
+    - name: 📤 Create GitHub Release
+      if: startsWith(github.event.head_commit.message, 'chore(release):')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.VERSION }}
+        release_name: Release v${{ env.VERSION }}
+        body: |
+          ## What's Changed
+          
+          See [CHANGELOG.md](CHANGELOG.md) for details.
+          
+          ## Downloads
+          
+          - Windows: `ghostcommit-windows.msi`
+          - macOS: `ghostcommit-macos.dmg`
+          - Linux: `ghostcommit-linux.AppImage`
+        draft: false
+        prerelease: contains(github.event.head_commit.message, 'alpha') || contains(github.event.head_commit.message, 'beta') || contains(github.event.head_commit.message, 'rc')
+
+  # ==========================================
+  # Documentation
+  # ==========================================
+  docs:
+    name: 📚 Documentation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: 📋 Install dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build documentation
+      run: |
+        # Aqui você pode adicionar geração automática de docs
+        echo "Building documentation..."
+        
+    - name: 🚀 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs-build

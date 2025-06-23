@@ -1,0 +1,326 @@
+<div class="git-compare-container">
+    <div class="compare-header">
+        <h1 class="page-title gradient-text">
+            <mat-icon>compare_arrows</mat-icon>
+            Git Compare
+        </h1>
+        <p class="page-subtitle">Compare commits, branches e tags</p>
+    </div>
+
+    <!-- Repository Selection -->
+    <mat-card class="repo-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>folder</mat-icon>
+                Repositório Git
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="repo-input-container">
+                <mat-form-field appearance="outline" class="repo-input">
+                    <mat-label>Caminho do repositório</mat-label>
+                    <input matInput [(ngModel)]="repositoryPath" placeholder="/caminho/para/repo">
+                    <mat-icon matSuffix>folder</mat-icon>
+                </mat-form-field>
+                <button mat-stroked-button (click)="openRepositoryDialog()" class="browse-button">
+                    <mat-icon>folder_open</mat-icon>
+                    Procurar
+                </button>
+                <button mat-raised-button color="primary" (click)="loadRepository()" [disabled]="!repositoryPath">
+                    <mat-icon>search</mat-icon>
+                    Carregar
+                </button>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Commit Selection -->
+    <mat-card class="selection-card" *ngIf="currentRepository">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>compare_arrows</mat-icon>
+                Seleção de Commits
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <!-- <div class="compare-selectors"> -->
+
+            <div class="row">
+                <div class="col">
+                    <!-- Step 1: Branch Selection A com busca -->
+                    <mat-form-field appearance="outline" class="ref-select w-100">
+                        <mat-label>Branch A</mat-label>
+                        <mat-select [(value)]="selectedBranchRefA" (selectionChange)="onBranchAChange()">
+                            <mat-select-trigger>
+                                <div class="ref-option">
+                                    <mat-icon class="ref-icon">
+                                        {{ getRefIcon(getBranchType(selectedBranchRefA)) }}
+                                    </mat-icon>
+                                    <span class="ref-display">
+                                        {{ getBranchDisplayName(selectedBranchRefA) }}
+                                    </span>
+                                </div>
+                            </mat-select-trigger>
+                            <mat-form-field appearance="outline" class="search-field-in-select w-100">
+                                <mat-label>Buscar branch...</mat-label>
+                                <input matInput [(ngModel)]="branchFilterA" (input)="filterBranchesA()"
+                                    (click)="$event.stopPropagation()" placeholder="Digite para filtrar">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+
+
+                            <!-- Opções de branches filtradas -->
+                            <mat-option *ngFor="let branch of filteredBranchesA" [value]="branch.name">
+                                <div class="ref-option">
+                                    <mat-icon class="ref-icon">{{ getRefIcon(branch.type) }}</mat-icon>
+                                    <span class="ref-display">{{ branch.display_name }}</span>
+                                </div>
+                            </mat-option>
+
+                            <!-- Mensagem quando não há resultados -->
+                            <mat-option *ngIf="filteredBranchesA.length === 0 && branchFilterA.trim()"
+                                class="no-results-option" disabled>
+                                <mat-icon>search_off</mat-icon>
+                                Nenhuma branch encontrada para "{{ branchFilterA }}"
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="col">
+                    <!-- Step 1: Branch Selection B com busca -->
+                    <mat-form-field appearance="outline" class="ref-select w-100">
+                        <mat-label>Branch B</mat-label>
+                        <mat-select [(value)]="selectedBranchRefB" (selectionChange)="onBranchBChange()">
+                            <mat-select-trigger>
+                                <div class="ref-option">
+                                    <mat-icon class="ref-icon">
+                                        {{ getRefIcon(getBranchType(selectedBranchRefB)) }}
+                                    </mat-icon>
+                                    <span class="ref-display">
+                                        {{ getBranchDisplayName(selectedBranchRefB) }}
+                                    </span>
+                                </div>
+                            </mat-select-trigger>
+
+                            <!-- Campo de busca dentro do select -->
+                            <mat-form-field appearance="outline" class="search-field-in-select w-100">
+                                <mat-label>Buscar branch...</mat-label>
+                                <input matInput [(ngModel)]="branchFilterB" (input)="filterBranchesB()"
+                                    (click)="$event.stopPropagation()" placeholder="Digite para filtrar">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+
+                            <!-- Opções de branches filtradas -->
+                            <mat-option *ngFor="let branch of filteredBranchesB" [value]="branch.name">
+                                <div class="ref-option">
+                                    <mat-icon class="ref-icon">{{ getRefIcon(branch.type) }}</mat-icon>
+                                    <span class="ref-display">{{ branch.display_name }}</span>
+                                </div>
+                            </mat-option>
+
+                            <!-- Mensagem quando não há resultados -->
+                            <mat-option *ngIf="filteredBranchesB.length === 0 && branchFilterB.trim()"
+                                class="no-results-option" disabled>
+                                <mat-icon>search_off</mat-icon>
+                                Nenhuma branch encontrada para "{{ branchFilterB }}"
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Step 2: Commit Selection com busca -->
+                @if(selectedBranchRefA || selectedBranchRefB){
+                <div class="col">
+                    <mat-form-field appearance="outline" class="ref-select w-100" *ngIf="selectedBranchRefA">
+                        <mat-label>Commit A ({{ selectedBranchRefA }})</mat-label>
+                        <mat-select [(value)]="selectedRefA" [disabled]="loadingCommitsA">
+                            <!-- Campo de busca para commits A -->
+
+                            <mat-form-field appearance="outline" class="search-field-in-select w-100">
+                                <mat-label>Buscar commit...</mat-label>
+                                <input matInput [(ngModel)]="commitFilterA" (input)="filterCommitsA()"
+                                    (click)="$event.stopPropagation()" placeholder="Hash, mensagem ou autor">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+
+
+                            <mat-option *ngFor="let commit of filteredCommitsA" [value]="commit.hash">
+                                <div class="commit-option">
+                                    <span class="commit-hash">{{ formatCommitHash(commit.hash) }}</span>
+                                    <span class="commit-message">{{ formatCommitMessage(commit.message) }}</span>
+                                    <span class="commit-date">{{ commit.date | date:'dd/MM/yy HH:mm' }}</span>
+                                </div>
+                            </mat-option>
+
+                            <!-- Mensagem quando não há resultados -->
+                            <mat-option *ngIf="filteredCommitsA.length === 0 && commitFilterA.trim()"
+                                class="no-results-option" disabled>
+                                <mat-icon>search_off</mat-icon>
+                                Nenhum commit encontrado para "{{ commitFilterA }}"
+                            </mat-option>
+                        </mat-select>
+                        <mat-progress-spinner *ngIf="loadingCommitsA" diameter="20" matSuffix></mat-progress-spinner>
+                    </mat-form-field>
+                </div>
+
+                <div class="col">
+                    <mat-form-field appearance="outline" class="ref-select w-100" *ngIf="selectedBranchRefB">
+                        <mat-label>Commit B ({{ selectedBranchRefB }})</mat-label>
+                        <mat-select [(value)]="selectedRefB" [disabled]="loadingCommitsB">
+                            <!-- Campo de busca para commits B -->
+                            <mat-form-field appearance="outline" class="search-field-in-select w-100">
+                                <mat-label>Buscar commit...</mat-label>
+                                <input matInput [(ngModel)]="commitFilterB" (input)="filterCommitsB()"
+                                    (click)="$event.stopPropagation()" placeholder="Hash, mensagem ou autor">
+                                <mat-icon matSuffix>search</mat-icon>
+                            </mat-form-field>
+
+                            <mat-option *ngFor="let commit of filteredCommitsB" [value]="commit.hash">
+                                <div class="commit-option">
+                                    <span class="commit-hash">{{ formatCommitHash(commit.hash) }}</span>
+                                    <span class="commit-message">{{ formatCommitMessage(commit.message) }}</span>
+                                    <span class="commit-date">{{ commit.date | date:'dd/MM/yy HH:mm' }}</span>
+                                </div>
+                            </mat-option>
+
+                            <!-- Mensagem quando não há resultados -->
+                            <mat-option *ngIf="filteredCommitsB.length === 0 && commitFilterB.trim()"
+                                class="no-results-option" disabled>
+                                <mat-icon>search_off</mat-icon>
+                                Nenhum commit encontrado para "{{ commitFilterB }}"
+                            </mat-option>
+                        </mat-select>
+                        <mat-progress-spinner *ngIf="loadingCommitsB" diameter="20" matSuffix></mat-progress-spinner>
+                    </mat-form-field>
+                </div>
+                }
+            </div>
+
+
+
+
+
+
+            <button mat-raised-button color="accent" (click)="compareCommits()" [disabled]="!canCompare() || loading">
+                <mat-icon>compare</mat-icon>
+                Comparar
+            </button>
+            <!-- </div> -->
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <p>{{ loadingMessage }}</p>
+    </div>
+
+    <!-- Comparison Results -->
+    <div *ngIf="comparisonResult && !loading" class="comparison-results fade-in-up">
+        <!-- Diff Stats -->
+        <mat-card class="diff-stats">
+            <mat-card-content>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <mat-icon>description</mat-icon>
+                        <span class="stat-value">{{ comparisonResult.diff.files.length }}</span>
+                        <span class="stat-label">Arquivos alterados</span>
+                    </div>
+                    <div class="stat-item addition">
+                        <mat-icon>add</mat-icon> <span
+                            class="stat-value">{{ comparisonResult.diff.stats.total_insertions || 0 }}</span>
+                        <span class="stat-label">Linhas adicionadas</span>
+                    </div>
+                    <div class="stat-item deletion">
+                        <mat-icon>remove</mat-icon>
+                        <span class="stat-value">{{ comparisonResult.diff.stats.total_deletions || 0 }}</span>
+                        <span class="stat-label">Linhas removidas</span>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- File List -->
+        <mat-card class="files-list">
+            <mat-card-header>
+                <mat-card-title>Arquivos Alterados</mat-card-title>
+                <mat-card-subtitle>
+                    <div class="list-actions">
+                        <button mat-stroked-button (click)="exportComparison('html')">
+                            <mat-icon>download</mat-icon>
+                            Exportar HTML
+                        </button>
+                        <button mat-stroked-button (click)="exportComparison('markdown')">
+                            <mat-icon>description</mat-icon>
+                            Exportar MD
+                        </button>
+                        <button mat-stroked-button (click)="exportComparison('text')">
+                            <mat-icon>text_snippet</mat-icon>
+                            Exportar TXT
+                        </button>
+                    </div>
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <!-- Filtros -->
+                <div class="file-filters">
+                    <mat-form-field appearance="outline" class="search-field">
+                        <mat-label>Buscar arquivos</mat-label>
+                        <input matInput [(ngModel)]="searchTerm" (input)="onSearchChange()"
+                            placeholder="Digite o nome do arquivo">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="status-filter">
+                        <mat-label>Filtrar por status</mat-label>
+                        <mat-select [(value)]="statusFilter" (selectionChange)="onStatusFilterChange()">
+                            <mat-option value="">Todos</mat-option>
+                            <mat-option *ngFor="let status of getUniqueStatuses()" [value]="status">
+                                <mat-icon>{{ getFileStatusIcon(status) }}</mat-icon>
+                                {{ status }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <button mat-stroked-button (click)="clearFilters()" [disabled]="!searchTerm && !statusFilter">
+                        <mat-icon>clear</mat-icon>
+                        Limpar
+                    </button>
+                </div>
+
+                <!-- Lista de arquivos -->
+                <div class="files-info" *ngIf="filteredFiles.length > 0 && comparisonResult">
+                    <p>{{ filteredFiles.length }} de {{ comparisonResult.diff.files.length }} arquivos</p>
+                </div>
+
+                <mat-expansion-panel *ngFor="let file of filteredFiles" class="file-panel">
+                    <mat-expansion-panel-header>
+                        <mat-panel-title>
+                            <mat-icon [class]="'status-' + file.status">{{ getFileStatusIcon(file.status) }}</mat-icon>
+                            <span class="file-path">{{ file.new_path }} </span>
+                            <mat-chip [class]="'status-chip-' + file.status" size="small">{{ file.status }}</mat-chip>
+                        </mat-panel-title>
+                        <mat-panel-description>
+                            <span class="file-stats">
+                                <span class="addition">+{{ file.insertions }}</span>
+                                <span class="deletion">-{{ file.deletions }}</span>
+                            </span>
+                        </mat-panel-description>
+                    </mat-expansion-panel-header>
+
+                    <div class="file-content">
+                        <div class="diff-placeholder">
+                            <p>Clique em "Ver Diferenças" para visualizar as alterações deste arquivo em uma nova página
+                                dedicada.</p>
+                            <button mat-raised-button color="primary" (click)="viewFileDiff(file)">
+                                <mat-icon>visibility</mat-icon>
+                                Ver Diferenças
+                            </button>
+                        </div>
+                    </div>
+                </mat-expansion-panel>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

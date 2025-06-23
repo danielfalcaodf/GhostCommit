@@ -1,0 +1,222 @@
+.navigation-container {
+      height: 100vh;
+      width: 100%;
+    }
+
+    .navigation-sidenav {
+      width: 280px;
+      background: var(--surface-color);
+      border-right: 1px solid var(--outline-color);
+    }
+
+    .repo-info {
+      padding: 16px;
+      border-bottom: 1px solid var(--outline-color);
+      background: var(--surface-variant-color);
+    }
+
+    .repo-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .repo-icon {
+      color: var(--primary-color);
+    }
+
+    .repo-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .repo-name {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--on-surface-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .repo-branch {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--on-surface-variant-color);
+      font-family: var(--font-family-mono);
+    }
+
+    .repo-branch mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    .repo-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--error-color);
+    }
+
+    .repo-status.clean {
+      color: var(--success-color);
+    }
+
+    .repo-status mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .navigation-list {
+      flex: 1;
+      padding-top: 8px;
+    }
+
+    .navigation-list mat-list-item {
+      transition: background-color 0.2s ease;
+    }
+
+    .navigation-list mat-list-item:hover:not(.disabled) {
+      background-color: var(--surface-variant-color);
+    }
+
+    .navigation-list mat-list-item.active {
+      background-color: var(--primary-container-color);
+      color: var(--on-primary-container-color);
+    }
+
+    .navigation-list mat-list-item.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .action-item {
+      cursor: pointer;
+    }
+
+    .nav-group {
+      margin: 8px 0;
+    }
+
+    .nav-group-header {
+      background: var(--surface-variant-color);
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .nav-submenu {
+      padding-left: 16px;
+    }
+
+    .nav-child-item {
+      padding-left: 32px;
+    }
+
+    .sidenav-footer {
+      padding: 16px;
+      border-top: 1px solid var(--outline-color);
+      display: flex;
+      justify-content: center;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .main-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--elevation-1);
+    }
+
+    .toolbar-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toolbar-title h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .toolbar-subtitle {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      line-height: 1;
+    }
+
+    .toolbar-spacer {
+      flex: 1;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-content {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      background: var(--background-color);
+    }
+
+    .hide-on-desktop {
+      display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navigation-sidenav {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .hide-on-desktop {
+        display: block;
+      }
+
+      .toolbar-title h1 {
+        font-size: 1.1rem;
+      }
+
+      .page-content {
+        padding: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .toolbar-actions {
+        gap: 4px;
+      }
+
+      .toolbar-title {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .toolbar-title h1 {
+        font-size: 1rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .toolbar-subtitle {
+        display: none;
+      }
+    }

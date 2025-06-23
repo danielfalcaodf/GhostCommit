@@ -1,0 +1,100 @@
+<div class="git-diff-container">
+    <!-- Header -->
+    <div class="diff-header">
+        <div class="breadcrumb">
+            <button mat-icon-button (click)="goBack()" matTooltip="Voltar para Git Compare">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h1 class="page-title">
+                <mat-icon>difference</mat-icon>
+                Git Diff
+            </h1>
+        </div>
+
+        <div class="file-info" *ngIf="fileComparison && !loading">
+            <span class="file-name">{{ filePath }}</span>
+            <mat-chip class="file-type">{{ fileComparison.language || 'text' }}</mat-chip>
+            <mat-chip [class]="'status-chip-' + fileComparison.status">
+                <mat-icon>{{ getFileStatusIcon(fileComparison.status) }}</mat-icon>
+                {{ fileComparison.status }}
+            </mat-chip>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <p>{{ loadingMessage }}</p>
+    </div>
+
+    <!-- Error -->
+    <mat-card *ngIf="error && !loading" class="error-card">
+        <mat-card-content>
+            <div class="error-content">
+                <mat-icon color="warn">error</mat-icon>
+                <span>{{ error }}</span>
+            </div>
+            <button mat-stroked-button (click)="goBack()">
+                <mat-icon>arrow_back</mat-icon>
+                Voltar
+            </button>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Diff Content -->
+    <div *ngIf="fileComparison && !loading && !error" class="diff-content">
+        <!-- Diff Stats -->
+        <mat-card class="diff-stats-card">
+            <mat-card-content>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <mat-icon>compare_arrows</mat-icon>
+                        <span class="stat-label">Comparando:</span>
+                        <span class="ref-info">{{ fromRef }} → {{ toRef }}</span>
+                    </div>
+                    <div class="stat-item addition" *ngIf="fileComparison.diff?.insertions">
+                        <mat-icon>add</mat-icon>
+                        <span class="stat-value">+{{ fileComparison.diff.insertions }}</span>
+                        <span class="stat-label">Adições</span>
+                    </div>
+                    <div class="stat-item deletion" *ngIf="fileComparison.diff?.deletions">
+                        <mat-icon>remove</mat-icon>
+                        <span class="stat-value">-{{ fileComparison.diff.deletions }}</span>
+                        <span class="stat-label">Remoções</span>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Diff Actions -->
+        <mat-card class="diff-actions-card">
+            <mat-card-content>
+                <div class="actions-row">
+                    <button mat-stroked-button (click)="copyDiffToClipboard()">
+                        <mat-icon>content_copy</mat-icon>
+                        Copiar Diff
+                    </button>
+                    <button mat-stroked-button (click)="downloadDiff()">
+                        <mat-icon>download</mat-icon>
+                        Baixar Diff
+                    </button>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Diff Viewer -->
+        <mat-card class="diff-viewer-card">
+            <mat-card-header>
+                <mat-card-title>
+                    <mat-icon>code</mat-icon>
+                    Diferenças do Arquivo
+                </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="monaco-container">
+                    <pre class="diff-content-text">{{ diffContent || 'Nenhuma diferença encontrada' }}</pre>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>
