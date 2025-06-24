@@ -8,7 +8,7 @@
 [![Angular](https://img.shields.io/badge/Angular-19-red?style=for-the-badge&logo=angular)](https://angular.io)
 [![Tauri](https://img.shields.io/badge/Tauri-v2-blue?style=for-the-badge&logo=tauri)](https://tauri.app)
 
-**Aplicativo desktop multiplataforma para análise avançada de repositórios Git**
+**Compare projetos inteiros entre commits, mas com histórico completo do Git**
 
 [📖 Documentação](docs/README.md) • [🚀 Instalação](docs/installation.md) • [🤝 Contribuir](docs/contributing.md) • [📋 Issues](https://github.com/danielfalcaodf/GhostCommit/issues)
 
@@ -16,27 +16,65 @@
 
 ---
 
-## ⚡ Sobre o Projeto
+## 🔍 Visão Geral
 
-GhostCommit é uma aplicação moderna construída com **Angular 19** e **Tauri v2** que oferece uma interface intuitiva para análise avançada de repositórios Git. Compare commits, visualize diffs com syntax highlighting e analise mudanças com uma experiência desktop nativa.
+GhostCommit é uma aplicação desktop moderna que funciona como um **WinMerge avançado para Git**, permitindo comparar **projetos inteiros** entre dois commits arbitrários com rastreabilidade completa de cada alteração.
 
-> **⚠️ Status do Projeto**: **40% implementado** - Pronto para colaboração Open Source! Base sólida com funcionalidades centrais funcionais. [Análise completa do status](./docs/REAL_FEATURE_STATUS_REPORT.md)
+### 🎯 O que o GhostCommit faz de diferente?
 
-## ✨ Funcionalidades
+**Ferramentas tradicionais (`git diff`, WinMerge, etc.):**
+- Mostram apenas "o que mudou" entre arquivos
+- Falta contexto histórico das alterações
 
-| Funcionalidade | Status | Descrição |
+**GhostCommit:**
+- ✅ **Comparação global**: Analise todos os arquivos alterados entre dois commits
+- ✅ **Rastreabilidade completa**: Para cada linha alterada, veja exatamente qual commit a introduziu
+- ✅ **Contexto histórico**: Autor, data, mensagem do commit para cada mudança
+- ✅ **Recuperação de código**: Encontre e restaure trechos removidos ou perdidos
+- ✅ **Auditoria visual**: Interface intuitiva para análise detalhada do histórico
+
+### 🔄 Como funciona:
+1. **Selecione dois commits** (A → B) de qualquer ponto do histórico
+2. **Visualize todas as diferenças** entre os projetos completos nesses pontos  
+3. **Para cada alteração**, descubra exatamente **quando**, **quem** e **em qual commit** ela foi introduzida
+4. **Navegue pelo histórico** e recupere código ou analise o contexto das mudanças
+
+> **⚠️ Status do Projeto**: **Em desenvolvimento ativo (40% concluído)** - Base sólida implementada, pronto para colaborações Open Source! Funcionalidades principais funcionais, algumas features avançadas em desenvolvimento. [Ver status detalhado](./docs/REAL_FEATURE_STATUS_REPORT.md)
+
+
+## ✨ Funcionalidades Principais
+
+### 🔍 Comparação Avançada de Commits
+- **Comparação global**: Analise alterações em todo o projeto entre dois pontos no histórico
+- **Seleção flexível**: Compare commits, branches, tags ou qualquer referência Git
+- **Visualização unificada**: Todas as diferenças em uma interface única e organizada
+
+### 📊 Rastreabilidade de Mudanças  
+- **Git Blame integrado**: Para cada linha alterada, veja autor, data e commit de origem
+- **Histórico contextual**: Acesse mensagens completas dos commits relacionados
+- **Timeline visual**: Entenda a evolução cronológica das alterações
+
+### 🎨 Interface e Experiência
+- **Diff com syntax highlighting**: Código colorido e formatado por linguagem
+- **Editor Monaco integrado**: Mesma engine do VS Code para visualização
+- **Design responsivo**: Interface adaptável e intuitiva
+- **Tema dark/light**: Experiência visual confortável
+
+### 🚀 Performance e Compatibilidade
+- **Aplicação nativa**: Performance desktop com Tauri v2
+- **Multiplataforma**: Windows, macOS e Linux
+- **Repositórios grandes**: Otimizado para projetos de qualquer tamanho
+- **Estado persistente**: Navegação com contexto preservado
+
+| Funcionalidade | Status | Detalhes Técnicos |
 |---|---|---|
-| 🔍 **Comparação de Commits** | 🚧 **Parcialmente Implementado** | Compare qualquer commit, branch ou tag - bugs na UX |
-| 📊 **Visualização de Diff** | ✅ **Implementado** | Diffs com syntax highlighting e estatísticas |
-| 🎨 **Interface Moderna** | ✅ **Implementado** | Tema dark com Material Design |
-| 📝 **Monaco Editor** | ✅ **Implementado** | Editor integrado (engine do VS Code) |
-| 🚀 **Performance Nativa** | ✅ **Implementado** | Aplicação desktop com Tauri v2 |
-| 🔧 **Multiplataforma** | ✅ **Implementado** | Windows, macOS e Linux |
-| 📱 **Design Responsivo** | ✅ **Implementado** | Interface adaptável |
-| 🔄 **Estado Persistente** | ✅ **Implementado** | Navegação com estado preservado |
-| 🔍 **Busca Avançada** | 🚧 **Parcialmente Implementado** | Filtros básicos funcionais, avançados em dev |
-| 👤 **Anotação de Origem** | � **Em Desenvolvimento** | Backend pronto, frontend 75% restante |
-| 📤 **Exportação** | � **Em Desenvolvimento** | Interface pronta, geração de arquivos faltando |  
+| 🔍 **Comparação de Commits** | 🚧 **Parcialmente Implementado** | Core funcional, bugs na seleção de refs |
+| 📊 **Diff com Highlighting** | ✅ **Implementado** | Monaco Editor + syntax highlighting completo |  
+| 👤 **Git Blame/Anotação** | 🔄 **Em Desenvolvimento** | Backend Rust 100%, frontend 25% |
+| 🎨 **Interface Moderna** | ✅ **Implementado** | Angular Material + tema dark |
+| 🔍 **Busca e Filtros** | 🚧 **Parcialmente Implementado** | Filtros básicos ok, avançados em dev |
+| 📤 **Exportação** | 🔄 **Em Desenvolvimento** | Interface pronta, geração pendente |
+| 🚀 **Performance Nativa** | ✅ **Implementado** | Tauri v2 + otimizações Rust |  
 
 ## ⭐ Funcionalidades em Destaque
 
@@ -62,7 +100,56 @@ private loadBlameInfo() {
 
 **Gap técnico:** 75% do trabalho já está pronto - apenas conectar o backend Rust ao frontend Angular.
 
-## 🎯 Casos de Uso
+## 📖 Exemplo de Uso
+
+### Cenário: Analisando mudanças entre duas versões
+
+```bash
+# Situação: Você precisa entender o que mudou entre a versão v1.0 e v2.0
+# Com git diff tradicional:
+git diff v1.0 v2.0  # Mostra apenas as diferenças
+
+# Com GhostCommit:
+# 1. Abra o repositório na interface
+# 2. Selecione: Commit A = v1.0, Commit B = v2.0  
+# 3. Visualize TODAS as mudanças com contexto histórico
+```
+
+### O que você verá no GhostCommit:
+
+**Arquivo: `src/auth/login.component.ts`**
+```diff
+- export class LoginComponent {
++ export class LoginComponent implements OnInit {
+    // 👤 Autor: João Silva
+    // 📅 Data: 2024-01-15  
+    // 📝 Commit: abc123 - "Add OnInit lifecycle hook"
+    
+-   private user: string;
++   private user: User;
+    // 👤 Autor: Maria Santos  
+    // 📅 Data: 2024-01-20
+    // 📝 Commit: def456 - "Refactor: use User interface instead of string"
+```
+
+### Casos de uso práticos:
+
+**🔍 Debugging de produção:**
+- Compare a versão atual com a última versão estável
+- Identifique exatamente qual commit introduziu o bug
+- Veja o contexto completo da alteração problemática
+
+**📈 Code Review:**
+- Analise todas as mudanças de uma feature branch
+- Entenda a evolução do código ao longo do tempo
+- Verifique se alguma funcionalidade foi removida acidentalmente
+
+**🔄 Recuperação de código:**
+- Encontre métodos ou classes que foram removidos
+- Veja exatamente quando e por que foram removidos
+- Restaure código perdido com contexto histórico
+
+### 💼 Principais Casos de Uso
 
 - **📈 Análise de Mudanças**: Compare qualquer dois pontos no histórico Git
 - **👥 Code Review**: Visualize mudanças entre versões de forma detalhada  
@@ -70,7 +157,9 @@ private loadBlameInfo() {
 - **⚙️ Desenvolvimento**: Entenda o impacto de merges e features
 - **🐛 Debugging**: Identifique quando bugs foram introduzidos
 
-## 🚀 Início Rápido
+## 🚀 Como Usar
+
+### ⚡ Início Rápido
 
 ```bash
 # Clone o repositório
@@ -80,14 +169,48 @@ cd GhostCommit
 # Instale as dependências
 npm install
 
-# Desenvolvimento web (para testar UI)
-npm start
-
-# Desenvolvimento desktop (aplicação completa)
+# Execute em modo de desenvolvimento
 npm run tauri dev
 
 # Build para produção
 npm run tauri build
+```
+
+### 📋 Pré-requisitos
+- **Node.js** 22+ 
+- **Rust** 1.70+ (para builds desktop)
+- **Git** 2.30+ (para funcionalidades avançadas)
+
+### 🎯 Uso da Aplicação
+
+1. **Abrir Repositório**
+   - Clique em "📁 Abrir Repositório" 
+   - Selecione a pasta do seu projeto Git
+
+2. **Configurar Comparação**
+   - Escolha o **Commit A** (ponto de partida)
+   - Escolha o **Commit B** (ponto de chegada)
+   - Clique em "🔍 Comparar"
+
+3. **Analisar Resultados**
+   - Navegue pelos arquivos alterados
+   - Clique em qualquer arquivo para ver o diff detalhado
+   - Use a funcionalidade de Git Blame para rastrear alterações
+
+### 🔧 Modos de Desenvolvimento
+
+```bash
+# Desenvolvimento web (apenas UI, sem funcionalidades Git)
+npm start
+# Acesse: http://localhost:4200
+
+# Desenvolvimento desktop (aplicação completa)  
+npm run tauri dev
+# App desktop será aberto automaticamente
+
+# Build otimizado para produção
+npm run tauri build
+# Executável gerado em: src-tauri/target/release/
 ```
 
 ## 📚 Documentação
