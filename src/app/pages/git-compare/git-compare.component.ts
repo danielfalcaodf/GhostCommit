@@ -612,7 +612,7 @@ ${this.comparisonResult!.diff.files.map(
     try {
       // Carregar commits da branch selecionada
       const commits = await this.gitService
-        .getCommits(50, 0, this.selectedBranchRefA)
+        .getCommits(200, 0, this.selectedBranchRefA)
         .toPromise();
       this.commitsA = commits || [];
 
@@ -653,7 +653,7 @@ ${this.comparisonResult!.diff.files.map(
     try {
       // Carregar commits da branch selecionada
       const commits = await this.gitService
-        .getCommits(50, 0, this.selectedBranchRefB)
+        .getCommits(200, 0, this.selectedBranchRefB)
         .toPromise();
       this.commitsB = commits || [];
 

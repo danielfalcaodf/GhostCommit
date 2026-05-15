@@ -1,7 +1,7 @@
 .git-diff-container {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  // padding: 24px;
+  // max-width: 1400px;
+  // margin: 0 auto;
   
   .diff-header {
     margin-bottom: 24px;
@@ -145,37 +145,280 @@
     .diff-actions-card {
       .actions-row {
         display: flex;
-        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
         flex-wrap: wrap;
+        
+        .view-mode-toggle {
+          display: flex;
+          gap: 8px;
+          border: 1px solid var(--outline-variant);
+          border-radius: 8px;
+          padding: 4px;
+          background: var(--surface-container-low);
+          
+          button {
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            padding: 8px 12px;
+            transition: all 0.2s ease-in-out;
+            
+            &.active {
+              background: var(--primary);
+              color: var(--on-primary);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            
+            &:hover:not(.active) {
+              background: var(--surface-container-high);
+            }
+            
+            mat-icon {
+              margin-right: 4px;
+            }
+          }
+        }
       }
     }
     
     .diff-viewer-card {
-      .monaco-container {
-        margin-top: 16px;
+      margin-top: 16px;
+      
+      mat-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         
-        .diff-content-text {
-          font-family: 'JetBrains Mono', 'Fira Code', monospace;
-          font-size: 14px;
-          line-height: 1.4;
-          background-color: var(--surface-variant);
+        .view-mode-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          
+          .blame-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--on-surface-variant);
+            font-size: 0.875rem;
+          }
+          
+          .blame-info {
+            color: var(--on-surface-variant);
+            font-size: 0.875rem;
+            font-weight: 500;
+          }
+        }
+      }
+      
+      mat-card-content {
+        padding: 0 !important;
+        
+        .monaco-editor-container {
+          height: 600px;
+          min-height: 400px;
+          max-height: 800px;
           border: 1px solid var(--outline-variant);
           border-radius: 8px;
-          padding: 16px;
-          overflow-x: auto;
-          white-space: pre-wrap;
-          margin: 0;
-          max-height: 600px;
-          overflow-y: auto;
+          overflow: hidden;
           
-          // Syntax highlighting for diff
-          &::before {
-            content: '';
+          // Comparação lado a lado
+          .comparison-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--surface-container-low);
+            border-bottom: 1px solid var(--outline-variant);
+            
+            .comparison-info {
+              display: flex;
+              gap: 24px;
+              
+              .editor-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+                
+                &.before {
+                  color: var(--error);
+                  
+                  .commit-chip {
+                    background: var(--error-container);
+                    color: var(--on-error-container);
+                  }
+                }
+                
+                &.after {
+                  color: var(--primary);
+                  
+                  .commit-chip {
+                    background: var(--primary-container);
+                    color: var(--on-primary-container);
+                  }
+                }
+                
+                .commit-chip {
+                  font-size: 0.75rem;
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                }
+              }
+            }
+            
+            .author-selector {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              
+              .author-select {
+                padding: 4px 8px;
+                border: 1px solid var(--outline);
+                border-radius: 4px;
+                background: var(--surface);
+                color: var(--on-surface);
+                min-width: 200px;
+              }
+            }
+          }
+          
+          .side-by-side-editors {
+            display: flex;
+            height: calc(100% - 60px);
+            
+            .editor-panel {
+              flex: 1;
+              position: relative;
+              
+              &.old-content {
+                border-right: 1px solid var(--outline-variant);
+              }
+              
+              app-monaco-blame-editor {
+                display: block;
+                height: 100%;
+                width: 100%;
+              }
+            }
+            
+            .editor-separator {
+              width: 40px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              background: var(--surface-container);
+              border-left: 1px solid var(--outline-variant);
+              border-right: 1px solid var(--outline-variant);
+              
+              .separator-line {
+                flex: 1;
+                width: 1px;
+                background: var(--outline);
+                margin: 8px 0;
+              }
+              
+              .separator-actions {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                
+                button {
+                  background: var(--surface);
+                  border: 1px solid var(--outline);
+                  
+                  &.active {
+                    background: var(--primary);
+                    color: var(--on-primary);
+                  }
+                }
+              }
+            }
+          }
+          
+          .author-changes-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            background: var(--surface-container);
+            border-top: 1px solid var(--outline);
+            overflow-y: auto;
+            
+            .panel-header {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 8px 16px;
+              background: var(--surface-container-high);
+              border-bottom: 1px solid var(--outline-variant);
+              font-weight: 500;
+            }
+            
+            .changes-list {
+              padding: 8px;
+              
+              .change-item {
+                margin-bottom: 12px;
+                padding: 8px;
+                border-radius: 4px;
+                background: var(--surface);
+                border: 1px solid var(--outline-variant);
+                
+                .change-info {
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 4px;
+                  
+                  .line-number {
+                    font-size: 0.875rem;
+                    color: var(--on-surface-variant);
+                  }
+                  
+                  .change-type {
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    
+                    &.change-added {
+                      background: var(--tertiary-container);
+                      color: var(--on-tertiary-container);
+                    }
+                    
+                    &.change-deleted {
+                      background: var(--error-container);
+                      color: var(--on-error-container);
+                    }
+                  }
+                }
+                
+                .change-content {
+                  pre {
+                    margin: 0;
+                    padding: 8px;
+                    background: var(--surface-container-low);
+                    border-radius: 4px;
+                    font-size: 0.875rem;
+                    overflow-x: auto;
+                  }
+                }
+              }
+            }
+          }
+          
+          app-monaco-blame-editor {
             display: block;
+            height: 100%;
             width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, #4caf50 0%, #ff9800 50%, #f44336 100%);
-            margin-bottom: 12px;
+          }
+          
+          // Ajustes para theme escuro
+          &.dark-theme {
+            border-color: var(--outline);
           }
         }
       }
@@ -214,9 +457,93 @@
       .diff-actions-card {
         .actions-row {
           flex-direction: column;
+          align-items: stretch;
           
-          button {
+          .view-mode-toggle {
+            justify-content: center;
+          }
+          
+          mat-slide-toggle {
+            align-self: center;
+          }
+          
+          .file-actions {
+            justify-content: center;
+          }
+        }
+      }
+      
+      .diff-viewer-card {
+        mat-card_header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          
+          .view-mode-actions {
+            align-self: flex-end;
+          }
+        }
+        
+        .monaco-editor-container {
+          height: 400px;
+          min-height: 300px;
+        }
+      }
+    }
+  }
+}
+
+// Comparação lado a lado responsiva
+@media (max-width: 1024px) {
+  .diff-content {
+    .monaco-editor-container {
+      .comparison-controls {
+        flex-direction: column;
+        gap: 12px;
+        
+        .comparison-info {
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+        }
+        
+        .author-selector {
+          width: 100%;
+          justify-content: space-between;
+          
+          .author-select {
+            flex: 1;
+            max-width: none;
+          }
+        }
+      }
+      
+      .side-by-side-editors {
+        flex-direction: column;
+        
+        .editor-panel {
+          height: 300px;
+          
+          &.old-content {
+            border-right: none;
+            border-bottom: 1px solid var(--outline-variant);
+          }
+        }
+        
+        .editor-separator {
+          width: 100%;
+          height: 40px;
+          flex-direction: row;
+          
+          .separator-line {
+            height: 1px;
             width: 100%;
+            margin: 0 8px;
+          }
+          
+          .separator-actions {
+            position: static;
+            transform: none;
           }
         }
       }
@@ -256,3 +583,14 @@
     transform: translateY(0);
   }
 }
+
+.side-by-side-view {
+          height: 600px;
+          min-height: 500px;
+          
+          app-side-by-side-diff {
+            display: block;
+            height: 100%;
+            width: 100%;
+          }
+        }

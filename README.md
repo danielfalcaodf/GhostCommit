@@ -179,7 +179,6 @@ npm run tauri build
 ### 📋 Pré-requisitos
 - **Node.js** 22+ 
 - **Rust** 1.70+ (para builds desktop)
-- **Git** 2.30+ (para funcionalidades avançadas)
 
 ### 🎯 Uso da Aplicação
 

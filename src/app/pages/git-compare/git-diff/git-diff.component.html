@@ -43,41 +43,50 @@
 
     <!-- Diff Content -->
     <div *ngIf="fileComparison && !loading && !error" class="diff-content">
-        <!-- Diff Stats -->
-        <mat-card class="diff-stats-card">
-            <mat-card-content>
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <mat-icon>compare_arrows</mat-icon>
-                        <span class="stat-label">Comparando:</span>
-                        <span class="ref-info">{{ fromRef }} → {{ toRef }}</span>
-                    </div>
-                    <div class="stat-item addition" *ngIf="fileComparison.diff?.insertions">
-                        <mat-icon>add</mat-icon>
-                        <span class="stat-value">+{{ fileComparison.diff.insertions }}</span>
-                        <span class="stat-label">Adições</span>
-                    </div>
-                    <div class="stat-item deletion" *ngIf="fileComparison.diff?.deletions">
-                        <mat-icon>remove</mat-icon>
-                        <span class="stat-value">-{{ fileComparison.diff.deletions }}</span>
-                        <span class="stat-label">Remoções</span>
-                    </div>
-                </div>
-            </mat-card-content>
-        </mat-card>
+        <!-- Enhanced Diff Stats -->
+        <app-enhanced-diff-stats [fileComparison]="fileComparison" [leftRef]="fromRef" [rightRef]="toRef"
+            [showDetails]="true" [compact]="false">
+        </app-enhanced-diff-stats>
 
         <!-- Diff Actions -->
         <mat-card class="diff-actions-card">
             <mat-card-content>
                 <div class="actions-row">
-                    <button mat-stroked-button (click)="copyDiffToClipboard()">
-                        <mat-icon>content_copy</mat-icon>
-                        Copiar Diff
-                    </button>
-                    <button mat-stroked-button (click)="downloadDiff()">
-                        <mat-icon>download</mat-icon>
-                        Baixar Diff
-                    </button>
+                    <!-- View Mode Toggle -->
+                    <div class="view-mode-toggle">
+                        <button mat-button [class.active]="viewMode === 'diff'" (click)="viewMode = 'diff'">
+                            <mat-icon>text_snippet</mat-icon>
+                            Diff Tradicional
+                        </button>
+                        <button mat-button [class.active]="viewMode === 'side-by-side'"
+                            (click)="viewMode = 'side-by-side'">
+                            <mat-icon>view_column</mat-icon>
+                            Comparação Visual
+                        </button>
+                        <button mat-button [class.active]="viewMode === 'monaco'" (click)="viewMode = 'monaco'">
+                            <mat-icon>code</mat-icon>
+                            Editor com Blame
+                        </button>
+                    </div>
+
+                    <!-- Blame Toggle (para Monaco mode) -->
+                    <mat-slide-toggle *ngIf="viewMode === 'monaco'" [(ngModel)]="showBlame" (change)="toggleBlame()"
+                        [disabled]="!blameInfo && !shouldLoadBlame()">
+                        <mat-icon>account_circle</mat-icon>
+                        Blame
+                    </mat-slide-toggle>
+
+                    <!-- Actions -->
+                    <div class="file-actions">
+                        <button mat-stroked-button (click)="copyDiffToClipboard()">
+                            <mat-icon>content_copy</mat-icon>
+                            Copiar Diff
+                        </button>
+                        <button mat-stroked-button (click)="downloadDiff()">
+                            <mat-icon>download</mat-icon>
+                            Baixar Diff
+                        </button>
+                    </div>
                 </div>
             </mat-card-content>
         </mat-card>
@@ -87,12 +96,120 @@
             <mat-card-header>
                 <mat-card-title>
                     <mat-icon>code</mat-icon>
-                    Diferenças do Arquivo
+                    {{ viewMode === 'side-by-side' ? 'Comparação Visual' : viewMode === 'monaco' ? 'Editor com Blame' : 'Diferenças do Arquivo' }}
                 </mat-card-title>
+                <div class="view-mode-actions" *ngIf="viewMode === 'monaco' && blameInfo">
+                    <span class="blame-status" *ngIf="loadingBlame">
+                        <mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+                        Carregando blame...
+                    </span>
+                    <span class="blame-info" *ngIf="!loadingBlame">
+                        {{ blameInfo.lines.length }} linhas com blame
+                    </span>
+                </div>
             </mat-card-header>
             <mat-card-content>
-                <div class="monaco-container">
+                <!-- Comparação Visual Side-by-Side -->
+                <div *ngIf="viewMode === 'side-by-side'" class="side-by-side-view">
+                    <app-side-by-side-diff [fileComparison]="fileComparison" [leftRef]="fromRef" [rightRef]="toRef"
+                        [fileName]="filePath" [language]="editorLanguage" [showStats]="true" [showHeader]="false"
+                        [theme]="'vs-dark'" [fontSize]="14" (lineClick)="onSideBySideLineClick($event)"
+                        [leftBlameInfo]="blameInfoOld" [rightBlameInfo]="blameInfo">
+                    </app-side-by-side-diff>
+                </div>
+
+                <!-- Diff Tradicional -->
+                <div *ngIf="viewMode === 'diff'" class="diff-traditional">
                     <pre class="diff-content-text">{{ diffContent || 'Nenhuma diferença encontrada' }}</pre>
+                </div>
+
+                <!-- Monaco Editor com Blame -->
+                <div *ngIf="viewMode === 'monaco'" class="monaco-editor-container">
+                    <!-- Controles da Comparação -->
+                    <div class="comparison-controls">
+                        <div class="comparison-info">
+                            <div class="editor-label before">
+                                <mat-icon>history</mat-icon>
+                                <span>{{ fromRef }}</span>
+                                <mat-chip class="commit-chip">ANTES</mat-chip>
+                            </div>
+                            <div class="editor-label after">
+                                <mat-icon>update</mat-icon>
+                                <span>{{ toRef }}</span>
+                                <mat-chip class="commit-chip">DEPOIS</mat-chip>
+                            </div>
+                        </div>
+
+                        <!-- Seletor de Autor para Destaque -->
+                        <div class="author-selector" *ngIf="blameInfo && showBlame">
+                            <mat-icon>person</mat-icon>
+                            <span>Destacar autor:</span>
+                            <select class="author-select" [(ngModel)]="selectedAuthor" (change)="onAuthorSelected()">
+                                <option value="">Todos os autores</option>
+                                <option *ngFor="let author of uniqueAuthors" [value]="author.name">
+                                    {{ author.name }} ({{ author.count }} linhas)
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Editores Lado a Lado -->
+                    <div class="side-by-side-editors">
+                        <!-- Editor do Conteúdo Antigo -->
+                        <div class="editor-panel old-content">
+                            <app-monaco-blame-editor [content]="editorContentOld" [language]="editorLanguage"
+                                [blameInfo]="blameInfoOld" [showBlame]="showBlame" [readonly]="true" [theme]="'vs-dark'"
+                                [fontSize]="14" [wordWrap]="'on'" [selectedAuthor]="selectedAuthor"
+                                [highlightChanges]="true" [changeType]="'old'" (lineClick)="onLineClick($event)"
+                                (blameLoaded)="onBlameLoaded('old', $event)"
+                                (authorSelected)="onAuthorSelected($event)">
+                            </app-monaco-blame-editor>
+                        </div>
+
+                        <!-- Separador Visual -->
+                        <div class="editor-separator">
+                            <div class="separator-line"></div>
+                            <div class="separator-actions">
+                                <button mat-icon-button (click)="syncScrolling = !syncScrolling"
+                                    [class.active]="syncScrolling" matTooltip="Sincronizar rolagem">
+                                    <mat-icon>sync</mat-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Editor do Conteúdo Novo -->
+                        <div class="editor-panel new-content">
+                            <app-monaco-blame-editor [content]="editorContent" [language]="editorLanguage"
+                                [blameInfo]="blameInfo" [showBlame]="showBlame" [readonly]="true" [theme]="'vs-dark'"
+                                [fontSize]="14" [wordWrap]="'on'" [selectedAuthor]="selectedAuthor"
+                                [highlightChanges]="true" [changeType]="'new'" (lineClick)="onLineClick($event)"
+                                (blameLoaded)="onBlameLoaded('new', $event)"
+                                (authorSelected)="onAuthorSelected($event)">
+                            </app-monaco-blame-editor>
+                        </div>
+                    </div>
+
+                    <!-- Painel de Alterações por Autor -->
+                    <div class="author-changes-panel" *ngIf="selectedAuthor && authorChanges.length > 0">
+                        <div class="panel-header">
+                            <mat-icon>code</mat-icon>
+                            <span>Alterações de {{ selectedAuthor }}</span>
+                            <button mat-icon-button (click)="selectedAuthor = ''" matTooltip="Fechar">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </div>
+                        <div class="changes-list">
+                            <div class="change-item" *ngFor="let change of authorChanges">
+                                <div class="change-info">
+                                    <span class="line-number">Linha {{ change.lineNumber }}</span>
+                                    <span class="change-type" [class]="'change-' + change.type">{{ change.type }}</span>
+                                </div>
+                                <div class="change-content">
+                                    <pre><code [class]="'language-' + editorLanguage">{{ change.content }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </mat-card-content>
         </mat-card>

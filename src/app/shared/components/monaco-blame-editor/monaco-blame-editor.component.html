@@ -1,0 +1,131 @@
+<div class="monaco-blame-editor-container">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+        <span>Carregando editor...</span>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+        <mat-icon color="warn">error</mat-icon>
+        <span>{{ error }}</span>
+    </div>
+
+    <!-- Editor Container -->
+    <div class="editor-layout" [class.loading]="loading" [class.error]="!!error">
+        <!-- Blame Panel (quando disponível) -->
+        <div #blamePanel class="blame-panel" *ngIf="showBlame && blameInfo && !loading && !error"
+            [class.collapsed]="!showBlame">
+
+            <!-- Blame Header -->
+            <div class="blame-header">
+                <div class="blame-title">
+                    <mat-icon>account_circle</mat-icon>
+                    <span>Blame Info</span>
+                </div>
+                <button mat-icon-button (click)="toggleBlame()" matTooltip="Ocultar informações de blame">
+                    <mat-icon>visibility_off</mat-icon>
+                </button>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Author Statistics -->
+            <div class="author-stats">
+                <div class="stats-title">
+                    <mat-icon>people</mat-icon>
+                    <span>Autores</span>
+                </div>
+
+                <div class="author-list">
+                    <div *ngFor="let author of authorStats" class="author-item" [style.border-left-color]="author.color"
+                        [class.selected]="selectedAuthor === author.name" (click)="onAuthorClick(author.name)">
+
+                        <div class="author-info">
+                            <div class="author-name">{{ author.name }}</div>
+                            <div class="author-email">{{ author.email }}</div>
+                        </div>
+
+                        <div class="author-stats-data">
+                            <div class="line-count">{{ author.count }} linhas</div>
+                            <div class="percentage">{{ author.percentage }}%</div>
+                        </div>
+
+                        <div class="author-color-indicator" [style.background-color]="author.color">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Line Info -->
+            <div *ngIf="selectedLine" class="selected-line-info">
+                <mat-divider></mat-divider>
+
+                <div class="line-info-title">
+                    <mat-icon>info</mat-icon>
+                    <span>Linha {{ selectedLine }}</span>
+                </div>
+
+                <div class="line-blame-details" *ngIf="getBlameForLine(selectedLine) as blameDetails">
+                    <div class="detail-row">
+                        <span class="label">Autor:</span>
+                        <span class="value">{{ blameDetails.author.name }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="label">Email:</span>
+                        <span class="value">{{ blameDetails.author.email }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="label">Commit:</span>
+                        <span class="value commit-hash">{{ blameDetails.commit_short_hash }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="label">Data:</span>
+                        <span class="value">{{ blameDetails.date | date:'medium':'pt-BR' }}</span>
+                    </div>
+
+                    <div class="detail-row message-row">
+                        <span class="label">Mensagem:</span>
+                        <span class="value message">{{ blameDetails.message.split('\n')[0] || 'Sem mensagem' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monaco Editor Container -->
+        <div class="editor-wrapper">
+            <!-- Editor Controls -->
+            <div class="editor-controls" *ngIf="!loading && !error">
+                <div class="control-group">
+                    <button mat-icon-button (click)="toggleBlame()"
+                        [matTooltip]="showBlame ? 'Ocultar blame' : 'Mostrar blame'" [disabled]="!blameInfo">
+                        <mat-icon>{{ showBlame ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    </button>
+
+                    <mat-divider [vertical]="true"></mat-divider>
+
+                    <span class="language-indicator">{{ language }}</span>
+
+                    <mat-divider [vertical]="true"></mat-divider>
+
+                    <span class="line-info" *ngIf="selectedLine">
+                        Linha {{ selectedLine }}
+                    </span>
+                </div>
+
+                <div class="action-group">
+                    <button mat-icon-button (click)="layout()" matTooltip="Redimensionar editor">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Monaco Editor -->
+            <div #editorContainer class="monaco-editor-container" [class.with-blame]="showBlame && blameInfo">
+            </div>
+        </div>
+    </div>
+</div>

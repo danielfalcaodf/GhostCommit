@@ -1,0 +1,297 @@
+<div class="git-compare-main">
+      <!-- Header com barra de ferramentas -->
+      <mat-toolbar color="primary" class="main-toolbar">
+        <span>GhostCommit - Comparador Git</span>
+        <span class="toolbar-spacer"></span>
+        
+        <div class="toolbar-actions" *ngIf="state.repository">
+          <button mat-icon-button (click)="refreshRepository()" [disabled]="state.loading">
+            <mat-icon [class.spinning]="state.loading">refresh</mat-icon>
+          </button>
+          
+          <button mat-icon-button (click)="toggleSidenav()">
+            <mat-icon>menu</mat-icon>
+          </button>
+        </div>
+      </mat-toolbar>
+
+      <div class="main-container">
+        <!-- Sidenav para informações e controles -->
+        <mat-sidenav-container class="sidenav-container">
+          <mat-sidenav #sidenav mode="side" opened="true" class="main-sidenav">
+            <div class="sidenav-content">
+              <!-- Seleção de repositório -->
+              <mat-card class="section-card">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>folder</mat-icon>
+                    Repositório
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-repo-selector
+                    (repositorySelected)="onRepositorySelected($event)"
+                    (repositoryChanged)="onRepositoryChanged($event)">
+                  </app-repo-selector>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Seleção de commits para comparação -->
+              <mat-card class="section-card" *ngIf="state.repository">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>compare_arrows</mat-icon>
+                    Comparação
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-commit-picker
+                    [refs]="state.refs"
+                    [loading]="state.loading"
+                    (commitASelected)="onCommitASelected($event)"
+                    (commitBSelected)="onCommitBSelected($event)"
+                    (compareRequested)="compareCommits()">
+                  </app-commit-picker>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Estatísticas do repositório -->
+              <mat-card class="section-card" *ngIf="state.repositoryStats">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>analytics</mat-icon>
+                    Estatísticas
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-diff-stats
+                    [stats]="state.repositoryStats"
+                    [showDetails]="true">
+                  </app-diff-stats>
+                </mat-card-content>
+              </mat-card>
+
+              <!-- Filtros dinâmicos -->
+              <mat-card class="section-card" *ngIf="state.comparison">
+                <mat-card-header>
+                  <mat-card-title>
+                    <mat-icon>filter_list</mat-icon>
+                    Filtros
+                  </mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <app-diff-filters
+                    [comparison]="state.comparison"
+                    (filtersChanged)="onFiltersChanged($event)">
+                  </app-diff-filters>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </mat-sidenav>
+
+          <!-- Conteúdo principal -->
+          <mat-sidenav-content class="main-content">
+            <!-- Barra de progresso -->
+            <mat-progress-bar 
+              *ngIf="state.loading" 
+              mode="indeterminate" 
+              class="loading-bar">
+            </mat-progress-bar>
+
+            <!-- Estado inicial: sem repositório -->
+            <div *ngIf="!state.repository" class="empty-state">
+              <mat-icon class="empty-icon">folder_open</mat-icon>
+              <h2>Selecione um Repositório Git</h2>
+              <p>Para começar, selecione um repositório Git local no painel lateral.</p>
+            </div>
+
+            <!-- Estado: repositório selecionado, aguardando comparação -->
+            <div *ngIf="state.repository && !state.comparison" class="empty-state">
+              <mat-icon class="empty-icon">compare_arrows</mat-icon>
+              <h2>Escolha os Commits para Comparar</h2>
+              <p>Selecione dois commits, branches ou tags para visualizar as diferenças.</p>
+              
+              <div class="repository-info" *ngIf="state.repository">
+                <mat-card>
+                  <mat-card-header>
+                    <mat-card-title>{{ state.repository.name }}</mat-card-title>
+                    <mat-card-subtitle>{{ state.repository.path }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="repo-details">
+                      <mat-chip-listbox>
+                        <mat-chip-option>
+                          <mat-icon matChipAvatar>branch</mat-icon>
+                          {{ state.repository.current_branch }}
+                        </mat-chip-option>
+                        <mat-chip-option>
+                          <mat-icon matChipAvatar>commit</mat-icon>
+                          {{ state.repository.total_commits }} commits
+                        </mat-chip-option>
+                        <mat-chip-option *ngIf="state.repository.size">
+                          <mat-icon matChipAvatar>storage</mat-icon>
+                          {{ state.repository.size }}
+                        </mat-chip-option>
+                      </mat-chip-listbox>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+
+            <!-- Comparação ativa -->
+            <div *ngIf="state.comparison" class="comparison-view">
+              <mat-tab-group class="comparison-tabs" animationDuration="0ms">
+                <!-- Tab: Arquivos -->
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>folder</mat-icon>
+                    Arquivos
+                    <span class="tab-badge" matBadge="{{ state.comparison.files.length }}" matBadgeSize="small"></span>
+                  </ng-template>
+                  
+                  <div class="tab-content">
+                    <div class="file-tree-container">
+                      <app-file-tree
+                        [comparison]="state.comparison"
+                        [filters]="state.filters"
+                        (fileSelected)="onFileSelected($event)">
+                      </app-file-tree>
+                    </div>
+                  </div>
+                </mat-tab>
+
+                <!-- Tab: Diff Viewer -->
+                <mat-tab [disabled]="!state.selectedFile">
+                  <ng-template mat-tab-label>
+                    <mat-icon>code</mat-icon>
+                    Diff
+                    <span *ngIf="state.selectedFile" class="selected-file">
+                      ({{ getFileName(state.selectedFile) }})
+                    </span>
+                  </ng-template>
+                  
+                  <div class="tab-content" *ngIf="state.fileComparison">
+                    <app-diff-viewer
+                      [fileComparison]="state.fileComparison"
+                      [repository]="state.repository"
+                      [commitA]="state.commitA!"
+                      [commitB]="state.commitB!"
+                      [showBlame]="true">
+                    </app-diff-viewer>
+                  </div>
+                </mat-tab>
+
+                <!-- Tab: Pesquisa Histórica -->
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>search</mat-icon>
+                    Histórico
+                    <span *ngIf="state.searchResults" class="tab-badge" 
+                          matBadge="{{ state.searchResults.total_matches }}" 
+                          matBadgeSize="small">
+                    </span>
+                  </ng-template>
+                  
+                  <div class="tab-content">
+                    <app-history-search
+                      [repository]="state.repository"
+                      (searchResults)="onSearchResults($event)">
+                    </app-history-search>
+                    
+                    <div *ngIf="state.searchResults" class="search-results">
+                      <h3>Resultados da Pesquisa</h3>
+                      <p>{{ state.searchResults.total_matches }} resultados encontrados em {{ state.searchResults.took_ms }}ms</p>
+                      
+                      <div class="search-matches">
+                        <mat-card *ngFor="let match of state.searchResults.results" class="search-match">
+                          <mat-card-header>
+                            <mat-card-title>{{ match.commit.short_hash }}</mat-card-title>
+                            <mat-card-subtitle>{{ match.commit.author.name }} - {{ formatDate(match.commit.date) }}</mat-card-subtitle>
+                          </mat-card-header>
+                          <mat-card-content>
+                            <p>{{ match.commit.message }}</p>
+                            <div *ngIf="match.file_path" class="match-file">
+                              <mat-icon>insert_drive_file</mat-icon>
+                              {{ match.file_path }}
+                              <span *ngIf="match.line_number">(linha {{ match.line_number }})</span>
+                            </div>
+                            <div *ngIf="match.content" class="match-content">
+                              <code>{{ match.content }}</code>
+                            </div>
+                          </mat-card-content>
+                        </mat-card>
+                      </div>
+                    </div>
+                  </div>
+                </mat-tab>
+
+                <!-- Tab: Estatísticas da Comparação -->
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>bar_chart</mat-icon>
+                    Estatísticas
+                  </ng-template>
+                  
+                  <div class="tab-content">
+                    <app-diff-stats
+                      [stats]="state.comparison.stats"
+                      [comparison]="state.comparison"
+                      [showDetails]="true">
+                    </app-diff-stats>
+                  </div>
+                </mat-tab>
+
+                <!-- Tab: Exportação -->
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <mat-icon>file_download</mat-icon>
+                    Exportar
+                  </ng-template>
+                  
+                  <div class="tab-content">
+                    <div class="export-section">
+                      <h3>Exportar Comparação</h3>
+                      <p>Exporte os resultados da comparação em diferentes formatos.</p>
+                      
+                      <div class="export-options">
+                        <button mat-raised-button color="primary" (click)="exportComparison('patch')">
+                          <mat-icon>code</mat-icon>
+                          Patch (.patch)
+                        </button>
+                        
+                        <button mat-raised-button color="accent" (click)="exportComparison('markdown')">
+                          <mat-icon>description</mat-icon>
+                          Markdown
+                        </button>
+                        
+                        <button mat-raised-button (click)="exportComparison('html')">
+                          <mat-icon>web</mat-icon>
+                          HTML
+                        </button>
+                        
+                        <button mat-raised-button (click)="exportComparison('json')">
+                          <mat-icon>data_object</mat-icon>
+                          JSON
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+            </div>
+
+            <!-- Estado de erro -->
+            <div *ngIf="state.error" class="error-state">
+              <mat-icon class="error-icon">error</mat-icon>
+              <h2>Erro</h2>
+              <p>{{ state.error }}</p>
+              <button mat-raised-button color="warn" (click)="clearError()">
+                <mat-icon>refresh</mat-icon>
+                Tentar Novamente
+              </button>
+            </div>
+          </mat-sidenav-content>
+        </mat-sidenav-container>
+      </div>
+    </div>

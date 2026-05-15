@@ -1,0 +1,194 @@
+<div class="git-compare-main">
+      <!-- Header -->
+      <div class="header">
+        <h1>
+          <mat-icon>compare_arrows</mat-icon>
+          GhostCommit - Comparador Git
+        </h1>
+      </div>
+
+      <!-- Progress Bar -->
+      <mat-progress-bar 
+        *ngIf="state.loading" 
+        mode="indeterminate" 
+        class="loading-bar">
+      </mat-progress-bar>
+
+      <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Seleção de repositório -->
+          <mat-card class="section-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>folder</mat-icon>
+                Repositório
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-repo-selector
+                (repositorySelected)="onRepositorySelected($event)">
+              </app-repo-selector>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Seleção de commits -->
+          <mat-card class="section-card" *ngIf="state.repository">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>compare_arrows</mat-icon>
+                Comparação
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <app-commit-picker
+                [refs]="state.refs"
+                [loading]="state.loading"
+                (commitASelected)="onCommitASelected($event)"
+                (commitBSelected)="onCommitBSelected($event)"
+                (compareRequested)="compareCommits()">
+              </app-commit-picker>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+          <!-- Estado inicial -->
+          <div *ngIf="!state.repository" class="empty-state">
+            <mat-icon class="empty-icon">folder_open</mat-icon>
+            <h2>Selecione um Repositório Git</h2>
+            <p>Para começar, selecione um repositório Git local.</p>
+          </div>
+
+          <!-- Repositório selecionado, sem comparação -->
+          <div *ngIf="state.repository && !state.comparison" class="empty-state">
+            <mat-icon class="empty-icon">compare_arrows</mat-icon>
+            <h2>Escolha os Commits para Comparar</h2>
+            <p>Selecione dois commits, branches ou tags para visualizar as diferenças.</p>
+            
+            <mat-card class="repo-info">
+              <mat-card-header>
+                <mat-card-title>{{ state.repository.name }}</mat-card-title>
+                <mat-card-subtitle>{{ state.repository.path }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-chip-listbox>
+                  <mat-chip-option>
+                    <mat-icon matChipAvatar>branch</mat-icon>
+                    {{ state.repository.currentBranch }}
+                  </mat-chip-option>
+                  <mat-chip-option [class.clean]="state.repository.isClean">
+                    <mat-icon matChipAvatar>{{ state.repository.isClean ? 'check' : 'edit' }}</mat-icon>
+                    {{ state.repository.isClean ? 'Limpo' : 'Modificado' }}
+                  </mat-chip-option>
+                </mat-chip-listbox>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Comparação ativa -->
+          <div *ngIf="state.comparison" class="comparison-view">
+            <mat-tab-group class="comparison-tabs">
+              <!-- Tab: Arquivos -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>folder</mat-icon>
+                  Arquivos ({{ state.comparison.diff.files.length }})
+                </ng-template>
+                
+                <div class="tab-content">
+                  <app-file-tree
+                    [comparison]="state.comparison"
+                    (fileSelected)="onFileSelected($event)">
+                  </app-file-tree>
+                </div>
+              </mat-tab>
+
+              <!-- Tab: Diff Viewer -->
+              <mat-tab [disabled]="!state.selectedFile">
+                <ng-template mat-tab-label>
+                  <mat-icon>code</mat-icon>
+                  Diff
+                  <span *ngIf="state.selectedFile" class="selected-file">
+                    ({{ getFileName(state.selectedFile) }})
+                  </span>
+                </ng-template>
+                
+                <div class="tab-content" *ngIf="state.fileComparison">
+                  <app-diff-viewer
+                    [fileComparison]="state.fileComparison"
+                    [repository]="state.repository"
+                    [commitA]="state.commitA!"
+                    [commitB]="state.commitB!"
+                    [showBlame]="true">
+                  </app-diff-viewer>
+                </div>
+              </mat-tab>
+
+              <!-- Tab: Resumo -->
+              <mat-tab>
+                <ng-template mat-tab-label>
+                  <mat-icon>bar_chart</mat-icon>
+                  Resumo
+                </ng-template>
+                
+                <div class="tab-content">
+                  <div class="stats-summary">
+                    <h3>Estatísticas da Comparação</h3>
+                    
+                    <div class="stats-grid">
+                      <mat-card class="stat-card">
+                        <mat-card-content>
+                          <div class="stat-value">{{ state.comparison.diff.stats.totalFiles }}</div>
+                          <div class="stat-label">Arquivos</div>
+                        </mat-card-content>
+                      </mat-card>
+                      
+                      <mat-card class="stat-card additions">
+                        <mat-card-content>
+                          <div class="stat-value">{{ state.comparison.diff.stats.totalInsertions }}</div>
+                          <div class="stat-label">Adições</div>
+                        </mat-card-content>
+                      </mat-card>
+                      
+                      <mat-card class="stat-card deletions">
+                        <mat-card-content>
+                          <div class="stat-value">{{ state.comparison.diff.stats.totalDeletions }}</div>
+                          <div class="stat-label">Remoções</div>
+                        </mat-card-content>
+                      </mat-card>
+                    </div>
+
+                    <h4>Arquivos Modificados</h4>
+                    <div class="file-list">
+                      <div *ngFor="let file of state.comparison.diff.files" class="file-item">
+                        <mat-icon [class]="'status-' + file.status">
+                          {{ getStatusIcon(file.status) }}
+                        </mat-icon>
+                        <span class="file-path">{{ file.path }}</span>
+                        <span class="file-changes">
+                          <span class="additions">+{{ file.insertions }}</span>
+                          <span class="deletions">-{{ file.deletions }}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </div>
+
+          <!-- Estado de erro -->
+          <div *ngIf="state.error" class="error-state">
+            <mat-icon class="error-icon">error</mat-icon>
+            <h2>Erro</h2>
+            <p>{{ state.error }}</p>
+            <button mat-raised-button color="warn" (click)="clearError()">
+              <mat-icon>refresh</mat-icon>
+              Tentar Novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>

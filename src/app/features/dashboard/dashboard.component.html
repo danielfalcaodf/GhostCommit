@@ -1,0 +1,118 @@
+<div class="dashboard-container">
+      <div class="row mb-4">
+        <div class="col-12">
+          <h1 class="page-title gradient-text">🚀 Dashboard</h1>
+          <p class="page-subtitle">Visão geral do seu ambiente de desenvolvimento</p>
+        </div>
+      </div>
+      
+      <div class="row mb-4">
+        <!-- Stats Cards -->
+        <div class="col-md-3 col-sm-6 mb-3">
+          <mat-card class="stat-card">
+            <mat-card-content class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>code</mat-icon>
+              </div>
+              <div class="stat-info">
+                <h3>{{ stats.filesModified }}</h3>
+                <p>Arquivos Modificados</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+          <mat-card class="stat-card">
+            <mat-card-content class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>commit</mat-icon>
+              </div>
+              <div class="stat-info">
+                <h3>{{ stats.commits }}</h3>
+                <p>Commits Hoje</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+          <mat-card class="stat-card">
+            <mat-card-content class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>branch</mat-icon>
+              </div>
+              <div class="stat-info">
+                <h3>{{ stats.branches }}</h3>
+                <p>Branches Ativas</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        
+        <div class="col-md-3 col-sm-6 mb-3">
+          <mat-card class="stat-card">
+            <mat-card-content class="stat-content">
+              <div class="stat-icon">
+                <mat-icon>timer</mat-icon>
+              </div>
+              <div class="stat-info">
+                <h3>{{ stats.timeSpent }}</h3>
+                <p>Horas Trabalhadas</p>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+      
+      <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-6 mb-4">
+          <mat-card class="action-card">
+            <mat-card-header>
+              <mat-card-title>🚀 Ações Rápidas</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="action-buttons">
+                <button mat-raised-button color="primary" routerLink="/editor">
+                  <mat-icon>code</mat-icon>
+                  Abrir Editor
+                </button>
+                <button mat-raised-button color="accent" routerLink="/git-compare">
+                  <mat-icon>compare_arrows</mat-icon>
+                  Comparar Commits
+                </button>
+                <button mat-raised-button (click)="testTauri()">
+                  <mat-icon>play_arrow</mat-icon>
+                  Testar Tauri
+                </button>
+                <button mat-raised-button (click)="openTerminal()">
+                  <mat-icon>terminal</mat-icon>
+                  Terminal
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-md-6 mb-4">
+          <mat-card class="activity-card">
+            <mat-card-header>
+              <mat-card-title>📈 Atividade Recente</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="activity-list">
+                <div class="activity-item" *ngFor="let activity of recentActivity">
+                  <mat-icon [ngClass]="'activity-icon ' + activity.type">{{ activity.icon }}</mat-icon>
+                  <div class="activity-details">
+                    <p class="activity-action">{{ activity.action }}</p>
+                    <span class="activity-time">{{ activity.time }}</span>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </div>

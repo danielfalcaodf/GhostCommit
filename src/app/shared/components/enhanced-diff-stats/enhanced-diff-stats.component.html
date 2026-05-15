@@ -1,0 +1,149 @@
+<div class="enhanced-diff-stats" [class.compact]="compact">
+    <!-- Header -->
+    <div class="stats-header" *ngIf="!compact">
+        <div class="comparison-info">
+            <div class="ref-info">
+                <mat-icon>history</mat-icon>
+                <span class="ref-name">{{ leftRef }}</span>
+            </div>
+            <mat-icon class="comparison-arrow">arrow_forward</mat-icon>
+            <div class="ref-info">
+                <mat-icon>update</mat-icon>
+                <span class="ref-name">{{ rightRef }}</span>
+            </div>
+        </div>
+
+        <!-- File Status -->
+        <div class="file-status" *ngIf="fileComparison">
+            <mat-chip [class]="'status-' + statusColor">
+                <mat-icon>{{ statusIcon }}</mat-icon>
+                {{ fileComparison.status }}
+            </mat-chip>
+            <mat-chip *ngIf="fileComparison.binary" class="binary-chip">
+                <mat-icon>memory</mat-icon>
+                Binário
+            </mat-chip>
+        </div>
+    </div>
+
+    <!-- Main Stats -->
+    <div class="main-stats">
+        <!-- Change Summary -->
+        <div class="change-summary">
+            <div class="summary-item additions" *ngIf="stats.additions > 0">
+                <div class="summary-icon">
+                    <mat-icon>add</mat-icon>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value">+{{ formatNumber(stats.additions) }}</div>
+                    <div class="summary-label">Adições</div>
+                </div>
+            </div>
+
+            <div class="summary-item deletions" *ngIf="stats.deletions > 0">
+                <div class="summary-icon">
+                    <mat-icon>remove</mat-icon>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value">-{{ formatNumber(stats.deletions) }}</div>
+                    <div class="summary-label">Remoções</div>
+                </div>
+            </div>
+
+            <div class="summary-item net-change" *ngIf="stats.netChange !== 0" [class.positive]="isNetAddition"
+                [class.negative]="isNetDeletion">
+                <div class="summary-icon">
+                    <mat-icon>{{ isNetAddition ? 'trending_up' : 'trending_down' }}</mat-icon>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-value">{{ stats.netChange > 0 ? '+' : '' }}{{ formatNumber(stats.netChange) }}
+                    </div>
+                    <div class="summary-label">Saldo</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Change Intensity Bar -->
+        <div class="change-intensity" *ngIf="hasChanges">
+            <div class="intensity-header">
+                <span class="intensity-label">Intensidade das mudanças</span>
+                <span class="intensity-percentage">{{ stats.changePercentage }}%</span>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="stats.changePercentage"
+                [class]="'intensity-' + changeIntensity">
+            </mat-progress-bar>
+        </div>
+    </div>
+
+    <!-- Detailed Stats -->
+    <div class="detailed-stats" *ngIf="showDetails && !compact">
+        <div class="stats-grid">
+            <!-- Lines -->
+            <div class="stat-item" *ngIf="stats.totalLines > 0">
+                <mat-icon>format_list_numbered</mat-icon>
+                <div class="stat-content">
+                    <div class="stat-value">{{ formatNumber(stats.totalLines) }}</div>
+                    <div class="stat-label">Total de linhas</div>
+                </div>
+            </div>
+
+            <!-- Modified Lines -->
+            <div class="stat-item" *ngIf="stats.modifiedLines > 0">
+                <mat-icon>edit</mat-icon>
+                <div class="stat-content">
+                    <div class="stat-value">{{ formatNumber(stats.modifiedLines) }}</div>
+                    <div class="stat-label">Linhas modificadas</div>
+                </div>
+            </div>
+
+            <!-- Language -->
+            <div class="stat-item" *ngIf="fileComparison?.language">
+                <mat-icon>code</mat-icon>
+                <div class="stat-content">
+                    <div class="stat-value">{{ fileComparison?.language }}</div>
+                    <div class="stat-label">Linguagem</div>
+                </div>
+            </div>
+
+            <!-- File Size (if available) -->
+            <!-- Note: Size property is not available in GitFileComparison, removing this section -->
+            <!--
+      <div class="stat-item" *ngIf="fileComparison?.size">
+        <mat-icon>storage</mat-icon>
+        <div class="stat-content">
+          <div class="stat-value">{{ formatFileSize(fileComparison.size) }}</div>
+          <div class="stat-label">Tamanho</div>
+        </div>
+      </div>
+      -->
+        </div>
+    </div>
+
+    <!-- No Changes -->
+    <div class="no-changes" *ngIf="!hasChanges && fileComparison">
+        <mat-icon color="primary">check_circle</mat-icon>
+        <span>Sem alterações detectadas</span>
+    </div>
+
+    <!-- Visual Diff Bar -->
+    <div class="visual-diff-bar" *ngIf="hasChanges && !compact">
+        <div class="diff-bar">
+            <div class="additions-bar" [style.width.%]="getAdditionsPercentage()"
+                [matTooltip]="stats.additions + ' adições'">
+            </div>
+            <div class="deletions-bar" [style.width.%]="getDeletionsPercentage()"
+                [matTooltip]="stats.deletions + ' remoções'">
+            </div>
+        </div>
+        <div class="diff-bar-legend">
+            <div class="legend-item additions">
+                <div class="legend-color"></div>
+                <span>Adições ({{ stats.additions }})</span>
+            </div>
+            <div class="legend-item deletions">
+                <div class="legend-color"></div>
+                <span>Remoções ({{ stats.deletions }})</span>
+            </div>
+        </div>
+    </div>
+</div>

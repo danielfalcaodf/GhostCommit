@@ -1059,8 +1059,53 @@ Diff:
         let old_hash = Some(delta.old_file().id().to_string());
         let new_hash = Some(delta.new_file().id().to_string());
 
-        // Extrair hunks seria mais complexo, simplificando por enquanto
-        let hunks = Vec::new();
+        // Extrai hunks e linhas do diff usando print callback
+        let mut hunks: Vec<GitDiffHunk> = Vec::new();
+        let mut patch_content = String::new();
+        
+        diff.print(DiffFormat::Patch, |_delta, hunk, line| {
+            if let Some(h) = hunk {
+                // Novo hunk
+                if let Some(last_hunk) = hunks.last_mut() {
+                    // Não faz nada, o hunk atual já foi adicionado
+                } else {
+                    // Primeiro hunk
+                }
+                
+                // Verificar se já existe um hunk com este header
+                let header = String::from_utf8_lossy(h.header()).to_string();
+                if hunks.iter().find(|existing_hunk| existing_hunk.header == header).is_none() {
+                    hunks.push(GitDiffHunk {
+                        header: header.clone(),
+                        old_start: h.old_start() as u32,
+                        old_lines: h.old_lines() as u32,
+                        new_start: h.new_start() as u32,
+                        new_lines: h.new_lines() as u32,
+                        lines: Vec::new(),
+                        context: None,
+                    });
+                }
+            }
+            
+            if let Some(current_hunk) = hunks.last_mut() {
+                let line_type = match line.origin() {
+                    '+' => GitDiffLineType::Added,
+                    '-' => GitDiffLineType::Deleted,
+                    ' ' => GitDiffLineType::Context,
+                    _ => GitDiffLineType::Context,
+                };
+                
+                current_hunk.lines.push(GitDiffLine {
+                    content: String::from_utf8_lossy(line.content()).to_string(),
+                    line_type,
+                    old_line_number: line.old_lineno().map(|n| n as u32),
+                    new_line_number: line.new_lineno().map(|n| n as u32),
+                });
+            }
+            
+            patch_content.push_str(&String::from_utf8_lossy(line.content()));
+            true
+        })?;
 
         Ok(GitFileDiff {
             old_path,

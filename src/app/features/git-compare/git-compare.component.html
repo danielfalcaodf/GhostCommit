@@ -1,0 +1,187 @@
+<div class="git-compare-container">
+      <!-- Header com seleção de repositório -->
+      <mat-card class="repository-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>folder_open</mat-icon>
+            Comparação de Commits Git
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="repository-controls">
+            <button mat-raised-button color="primary" (click)="openRepository()" [disabled]="loading">
+              <mat-icon>folder</mat-icon>
+              {{ currentRepository ? 'Trocar Repositório' : 'Abrir Repositório' }}
+            </button>
+            
+            <div *ngIf="currentRepository" class="repository-info">
+              <span class="repo-name">{{ currentRepository.name }}</span>
+              <span class="repo-path">{{ currentRepository.path }}</span>
+              <mat-chip color="accent" selected>{{ currentRepository.currentBranch }}</mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Seleção de commits para comparação -->
+      <mat-card *ngIf="currentRepository" class="comparison-controls">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>compare_arrows</mat-icon>
+            Selecionar Commits para Comparação
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="ref-selection">
+            <mat-form-field appearance="outline" class="ref-select">
+              <mat-label>Commit/Branch/Tag A (base)</mat-label>
+              <mat-select [(value)]="fromRef" [disabled]="loading">
+                <mat-optgroup *ngFor="let group of groupedRefs" [label]="group.label">
+                  <mat-option *ngFor="let ref of group.refs" [value]="ref.name">
+                    <div class="ref-option">
+                      <mat-icon class="ref-icon">{{ getRefIcon(ref.type) }}</mat-icon>
+                      <span class="ref-display">{{ ref.displayName }}</span>
+                    </div>
+                  </mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-icon class="comparison-arrow">arrow_forward</mat-icon>
+
+            <mat-form-field appearance="outline" class="ref-select">
+              <mat-label>Commit/Branch/Tag B (target)</mat-label>
+              <mat-select [(value)]="toRef" [disabled]="loading">
+                <mat-optgroup *ngFor="let group of groupedRefs" [label]="group.label">
+                  <mat-option *ngFor="let ref of group.refs" [value]="ref.name">
+                    <div class="ref-option">
+                      <mat-icon class="ref-icon">{{ getRefIcon(ref.type) }}</mat-icon>
+                      <span class="ref-display">{{ ref.displayName }}</span>
+                    </div>
+                  </mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+
+            <button 
+              mat-raised-button 
+              color="accent" 
+              (click)="compareCommits()" 
+              [disabled]="!canCompare() || loading">
+              <mat-icon>compare</mat-icon>
+              Comparar
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <p>{{ loadingMessage }}</p>
+      </div>
+
+      <!-- Resultados da comparação -->
+      <div *ngIf="comparisonResult && !loading" class="comparison-results">
+        <!-- Estatísticas do diff -->
+        <mat-card class="diff-stats">
+          <mat-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <mat-icon color="primary">description</mat-icon>
+                <span class="stat-value">{{ comparisonResult.diff.stats.totalFiles }}</span>
+                <span class="stat-label">Arquivos</span>
+              </div>
+              <div class="stat-item">
+                <mat-icon color="accent">add</mat-icon>
+                <span class="stat-value addition">+{{ comparisonResult.diff.stats.totalInsertions }}</span>
+                <span class="stat-label">Inserções</span>
+              </div>
+              <div class="stat-item">
+                <mat-icon color="warn">remove</mat-icon>
+                <span class="stat-value deletion">-{{ comparisonResult.diff.stats.totalDeletions }}</span>
+                <span class="stat-label">Remoções</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Lista de arquivos -->
+        <mat-card class="files-list">
+          <mat-card-header>
+            <mat-card-title>Arquivos Alterados</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-expansion-panel *ngFor="let file of comparisonResult.diff.files" class="file-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon [class]="'status-' + file.status">{{ getFileStatusIcon(file.status) }}</mat-icon>
+                  <span class="file-path">{{ file.path }}</span>
+                  <mat-chip [class]="'status-chip-' + file.status" size="small">{{ file.status }}</mat-chip>
+                </mat-panel-title>
+                <mat-panel-description>
+                  <span class="file-stats">
+                    <span class="addition">+{{ file.insertions }}</span>
+                    <span class="deletion">-{{ file.deletions }}</span>
+                  </span>
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+
+              <div class="file-diff-content">
+                <div class="diff-controls">
+                  <button mat-button (click)="loadFileComparison(file.path)" [disabled]="loadingFile === file.path">
+                    <mat-icon>visibility</mat-icon>
+                    Ver Diferenças
+                  </button>
+                  <button mat-button (click)="openInEditor(file.path)">
+                    <mat-icon>edit</mat-icon>
+                    Abrir no Editor
+                  </button>
+                </div>
+
+                <!-- Monaco Editor para exibir diff -->
+                <div *ngIf="fileComparisons.has(file.path)" class="monaco-diff-container">
+                  <mat-tab-group>
+                    <mat-tab label="Diff Unificado">
+                      <app-monaco-editor
+                        [language]="detectLanguage(file.path)"
+                        [code]="formatUnifiedDiff(fileComparisons.get(file.path)!)"
+                        [theme]="'vs-dark'"
+                        [options]="diffEditorOptions">
+                      </app-monaco-editor>
+                    </mat-tab>
+                    <mat-tab label="Side by Side" *ngIf="fileComparisons.get(file.path)?.oldContent && fileComparisons.get(file.path)?.newContent">
+                      <div class="side-by-side-diff">
+                        <div class="diff-side">
+                          <h4>Antes ({{ fromRef }})</h4>
+                          <app-monaco-editor
+                            [language]="detectLanguage(file.path)"
+                            [code]="fileComparisons.get(file.path)!.oldContent || ''"
+                            [theme]="'vs-dark'"
+                            [options]="editorOptions">
+                          </app-monaco-editor>
+                        </div>
+                        <div class="diff-side">
+                          <h4>Depois ({{ toRef }})</h4>
+                          <app-monaco-editor
+                            [language]="detectLanguage(file.path)"
+                            [code]="fileComparisons.get(file.path)!.newContent || ''"
+                            [theme]="'vs-dark'"
+                            [options]="editorOptions">
+                          </app-monaco-editor>
+                        </div>
+                      </div>
+                    </mat-tab>
+                  </mat-tab-group>
+                </div>
+
+                <div *ngIf="loadingFile === file.path" class="file-loading">
+                  <mat-progress-spinner mode="indeterminate" diameter="30"></mat-progress-spinner>
+                  <span>Carregando diferenças...</span>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>

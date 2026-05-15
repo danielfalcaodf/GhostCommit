@@ -6,3 +6,5 @@ export * from './file-tree/file-tree.component';
 export * from './diff-viewer/diff-viewer.component';
 export * from './navigation-shell/navigation-shell.component';
 export * from './theme-toggle/theme-toggle.component';
+export * from './side-by-side-diff/side-by-side-diff.component';
+export * from './enhanced-diff-stats/enhanced-diff-stats.component';

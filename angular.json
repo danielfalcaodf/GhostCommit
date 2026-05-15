@@ -30,6 +30,9 @@
             "assets": [
               "src/assets"
             ],
+            "allowedCommonJsDependencies": [
+              "monaco-editor"
+            ],
             "styles": [
               "src/styles.scss"
             ]
@@ -44,8 +47,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "16kb",
+                  "maximumError": "32kb"
                 }
               ],
               "outputHashing": "all"

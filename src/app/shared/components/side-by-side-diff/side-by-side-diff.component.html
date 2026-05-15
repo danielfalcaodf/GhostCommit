@@ -1,0 +1,105 @@
+<div class="side-by-side-diff-container">
+    <!-- Header -->
+    <div class="diff-header" *ngIf="showHeader">
+        <div class="file-info">
+            <div class="file-name">
+                <mat-icon>description</mat-icon>
+                <span>{{ fileName }}</span>
+            </div>
+
+            <div class="comparison-refs">
+                <mat-chip class="ref-chip left-ref">
+                    <mat-icon>history</mat-icon>
+                    {{ leftRef }}
+                </mat-chip>
+                <mat-icon class="comparison-arrow">compare_arrows</mat-icon>
+                <mat-chip class="ref-chip right-ref">
+                    <mat-icon>update</mat-icon>
+                    {{ rightRef }}
+                </mat-chip>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="enhanced-stats" *ngIf="showStats && fileComparison">
+            <app-enhanced-diff-stats [fileComparison]="fileComparison" [leftRef]="leftRef" [rightRef]="rightRef"
+                [showDetails]="true" [compact]="false">
+            </app-enhanced-diff-stats>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="diff-controls">
+        <div class="control-group">
+            <button mat-icon-button (click)="toggleSideBySide()"
+                [matTooltip]="isSideBySide ? 'Visualização unificada' : 'Visualização lado a lado'"
+                [class.active]="isSideBySide">
+                <mat-icon>{{ isSideBySide ? 'view_agenda' : 'view_column' }}</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="toggleWordWrap()"
+                [matTooltip]="config.wordWrap ? 'Desabilitar quebra de linha' : 'Habilitar quebra de linha'"
+                [class.active]="config.wordWrap">
+                <mat-icon>wrap_text</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="layout()" matTooltip="Redimensionar editor">
+                <mat-icon>refresh</mat-icon>
+            </button>
+        </div>
+
+        <div class="theme-toggle">
+            <mat-slide-toggle [checked]="theme === 'vs-dark'"
+                (change)="theme = $event.checked ? 'vs-dark' : 'vs-light'">
+                <mat-icon>{{ theme === 'vs-dark' ? 'dark_mode' : 'light_mode' }}</mat-icon>
+                Tema escuro
+            </mat-slide-toggle>
+        </div>
+    </div>
+
+    <!-- Editor Container -->
+    <div class="editor-container" [class.loading]="loading">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-overlay">
+            <mat-progress-spinner mode="indeterminate" diameter="48">
+            </mat-progress-spinner>
+            <span>Carregando comparação...</span>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error && !loading" class="error-overlay">
+            <mat-icon color="warn">error</mat-icon>
+            <span>{{ error }}</span>
+            <button mat-stroked-button (click)="initializeEditor()">
+                <mat-icon>refresh</mat-icon>
+                Tentar novamente
+            </button>
+        </div>
+
+        <!-- Diff Editor -->
+        <div #diffEditorContainer class="monaco-diff-editor" [class.hidden]="loading || error">
+        </div>
+
+        <!-- Side Labels -->
+        <div class="side-labels" *ngIf="!loading && !error && isSideBySide">
+            <div class="side-label left">
+                <mat-icon>history</mat-icon>
+                <span>{{ leftRef }}</span>
+                <mat-chip class="status-chip deletion">REMOVIDO</mat-chip>
+            </div>
+
+            <div class="side-label right">
+                <mat-icon>update</mat-icon>
+                <span>{{ rightRef }}</span>
+                <mat-chip class="status-chip addition">ADICIONADO</mat-chip>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Changes Message -->
+    <div *ngIf="!loading && !error && !hasChanges" class="no-changes">
+        <mat-icon>check_circle</mat-icon>
+        <h3>Nenhuma diferença encontrada</h3>
+        <p>Os arquivos são idênticos entre os commits selecionados.</p>
+    </div>
+</div>

@@ -1,0 +1,255 @@
+.git-compare-main {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-toolbar {
+      flex-shrink: 0;
+    }
+
+    .toolbar-spacer {
+      flex: 1 1 auto;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .main-container {
+      flex: 1;
+      display: flex;
+    }
+
+    .sidenav-container {
+      height: 100%;
+    }
+
+    .main-sidenav {
+      width: 400px;
+      min-width: 350px;
+      border-right: 1px solid var(--outline-color);
+    }
+
+    .sidenav-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .section-card {
+      flex-shrink: 0;
+    }
+
+    .section-card mat-card-header {
+      margin-bottom: 16px;
+    }
+
+    .section-card mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.1rem;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .loading-bar {
+      flex-shrink: 0;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px;
+      color: var(--on-surface-variant-color);
+    }
+
+    .empty-icon {
+      font-size: 72px;
+      width: 72px;
+      height: 72px;
+      margin-bottom: 24px;
+      opacity: 0.6;
+    }
+
+    .empty-state h2 {
+      margin: 0 0 16px 0;
+      font-weight: 400;
+    }
+
+    .empty-state p {
+      margin: 0;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .repository-info {
+      margin-top: 32px;
+      max-width: 500px;
+    }
+
+    .repo-details {
+      margin-top: 16px;
+    }
+
+    .comparison-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .comparison-tabs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .comparison-tabs ::ng-deep .mat-mdc-tab-group {
+      flex: 1;
+    }
+
+    .comparison-tabs ::ng-deep .mat-mdc-tab-body-wrapper {
+      flex: 1;
+    }
+
+    .tab-content {
+      height: 100%;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .tab-badge {
+      margin-left: 8px;
+    }
+
+    .selected-file {
+      font-size: 0.85em;
+      opacity: 0.8;
+      margin-left: 4px;
+    }
+
+    .file-tree-container {
+      height: 100%;
+    }
+
+    .search-results {
+      margin-top: 24px;
+    }
+
+    .search-matches {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .search-match {
+      max-width: 100%;
+    }
+
+    .match-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-family: var(--font-family-mono);
+      font-size: 0.9em;
+      color: var(--primary-color);
+    }
+
+    .match-content {
+      margin-top: 8px;
+      padding: 8px;
+      background-color: var(--surface-variant-color);
+      border-radius: 4px;
+    }
+
+    .match-content code {
+      font-family: var(--font-family-mono);
+      font-size: 0.9em;
+    }
+
+    .export-section {
+      max-width: 600px;
+    }
+
+    .export-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .error-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px;
+    }
+
+    .error-icon {
+      font-size: 72px;
+      width: 72px;
+      height: 72px;
+      margin-bottom: 24px;
+      color: var(--error-color);
+    }
+
+    .error-state h2 {
+      margin: 0 0 16px 0;
+      color: var(--error-color);
+    }
+
+    .error-state p {
+      margin: 0 0 24px 0;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .main-sidenav {
+        width: 100%;
+        min-width: auto;
+      }
+
+      .sidenav-content {
+        padding: 12px;
+      }
+
+      .tab-content {
+        padding: 12px;
+      }
+
+      .export-options {
+        flex-direction: column;
+      }
+
+      .export-options button {
+        width: 100%;
+      }
+    }
